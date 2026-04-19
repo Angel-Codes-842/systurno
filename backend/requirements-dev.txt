@@ -1,0 +1,23 @@
+# ============================================
+# Dependencias para Desarrollo
+# ============================================
+# Usar: pip install -r requirements-dev.txt
+
+# Incluir dependencias base
+-r requirements-minimal.txt
+
+# Testing
+pytest>=7.4.0
+pytest-django>=4.5.0
+pytest-cov>=4.1.0
+factory-boy>=3.3.0
+faker>=20.0.0
+
+# Desarrollo
+django-debug-toolbar>=4.2.0
+ipython>=8.17.0
+
+# Linting y Formateo
+black>=23.11.0
+flake8>=6.1.0
+isort>=5.12.0

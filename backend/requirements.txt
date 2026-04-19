@@ -1,0 +1,54 @@
+# ============================================
+# Sistema de Recepción de Pacientes - Backend
+# ============================================
+
+# Core Django
+Django>=5.0,<6.0
+python-dotenv>=1.0.0
+
+# Django REST Framework
+djangorestframework>=3.14.0
+djangorestframework-simplejwt>=5.3.0
+
+# CORS Headers
+django-cors-headers>=4.3.0
+
+# WebSockets (Django Channels)
+channels>=4.0.0
+daphne>=4.0.0
+channels-redis>=4.1.0
+
+# Base de Datos
+psycopg2-binary>=2.9.9  # PostgreSQL
+# SQLite viene incluido con Python
+
+# Redis (opcional para WebSocket en producción)
+redis>=5.0.0
+
+# Servidor ASGI/WSGI para Producción
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
+whitenoise>=6.0.0  # Servir archivos estáticos/media
+
+# Utilidades
+pytz>=2023.3  # Manejo de zonas horarias
+
+# Seguridad (opcional pero recomendado)
+django-ratelimit>=4.1.0  # Rate limiting
+django-cryptography>=1.1  # Encriptación de campos
+
+# Testing (opcional)
+pytest>=7.4.0
+pytest-django>=4.5.0
+pytest-cov>=4.1.0
+factory-boy>=3.3.0
+faker>=20.0.0
+
+# Reportes (opcional)
+reportlab>=4.0.0  # Generación de PDFs
+openpyxl>=3.1.0  # Exportación a Excel
+Pillow>=10.0.0  # Procesamiento de imágenes
+
+# Desarrollo (opcional)
+django-debug-toolbar>=4.2.0
+ipython>=8.17.0

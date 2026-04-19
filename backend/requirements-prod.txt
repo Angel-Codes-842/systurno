@@ -1,0 +1,21 @@
+# ============================================
+# Dependencias para Producción
+# ============================================
+# Usar: pip install -r requirements-prod.txt
+
+# Incluir dependencias base
+-r requirements-minimal.txt
+
+# Base de Datos
+psycopg2-binary>=2.9.9
+
+# Redis para WebSocket
+redis>=5.0.0
+channels-redis>=4.1.0
+
+# Servidores ASGI/WSGI
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
+
+# Seguridad
+django-ratelimit>=4.1.0
