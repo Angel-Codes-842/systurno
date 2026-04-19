@@ -203,12 +203,6 @@ Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detal
 
 Desarrollado para Biogenic - Laboratorio de Análisis Clínicos
 
-## 🙏 Agradecimientos
-
-- Django y Django Channels por el excelente framework
-- React y Vite por las herramientas de desarrollo
-- Tailwind CSS por el sistema de diseño
-
 ---
 
 ⭐ Si este proyecto te fue útil, considera darle una estrella en GitHub
