@@ -33,13 +33,22 @@ Gestión completa de turnos con atajos de teclado
 
 ## 🚀 Inicio Rápido
 
+### Desarrollo Local
 ```bash
-./setup.sh           # Primera vez
-./start.sh           # Iniciar sistema
-./check-services.sh  # Ver URLs y estado
+git clone https://github.com/Angel-Codes-842/systurno.git
+cd systurno
+./setup.sh    # Instala todo automáticamente
+./start.sh    # Inicia el sistema
 ```
 
-📖 **Guía completa:** Ver [INICIO-RAPIDO.md](INICIO-RAPIDO.md)
+### Producción (Ubuntu Server)
+```bash
+git clone https://github.com/Angel-Codes-842/systurno.git /opt/turnos
+cd /opt/turnos
+./deploy.sh   # Instala Nginx, configura todo automáticamente
+```
+
+📖 **Guía detallada:** Ver [INSTALACION.md](INSTALACION.md)
 
 ## ✨ Flujo
 
