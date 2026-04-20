@@ -2,7 +2,7 @@
 REM Kiosko con Impresion Silenciosa - Windows
 REM La IP del servidor se detecta automaticamente.
 REM Si quieres forzar una IP fija, descomenta la siguiente linea y edita el valor:
-REM set SERVER_IP=192.168.0.32
+REM set SERVER_IP=192.168.0.X
 
 set PORT=3000
 

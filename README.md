@@ -65,7 +65,7 @@ deploy.bat    :: Build del frontend + registra tareas en el Programador de tarea
 ```
 > Requiere ejecutar como **Administrador**. Los servicios arrancan automáticamente al iniciar sesión.
 
-📖 **Guía detallada:** Ver [INSTALACION.md](INSTALACION.md)
+📖 **Guía detallada:** Ver [INSTALACION.md](docs/INSTALACION.md)
 
 ## ✨ Flujo
 
@@ -211,14 +211,14 @@ tail -f backend.log
 tail -f frontend.log
 ```
 
-Ver [TROUBLESHOOTING.md](TROUBLESHOOTING.md) para más detalles.
+Ver [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) para más detalles.
 
 ## 📚 Documentación
 
-- [QUICKSTART.md](QUICKSTART.md) - Guía rápida de inicio
-- [INICIO-RAPIDO.md](INICIO-RAPIDO.md) - Guía detallada en español
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Solución de problemas
-- [IMPRESION_AUTOMATICA.md](IMPRESION_AUTOMATICA.md) - Configurar impresión
+- [QUICKSTART.md](docs/QUICKSTART.md) - Guía rápida de inicio
+- [INICIO-RAPIDO.md](docs/INICIO-RAPIDO.md) - Guía detallada en español
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Solución de problemas
+- [IMPRESION_AUTOMATICA.md](docs/IMPRESION_AUTOMATICA.md) - Configurar impresión
 
 ## 🤝 Contribuir
 
