@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { API_URL } from '../config/api'
-import { Image as ImageIcon, Video, UploadCloud, Trash2, PauseCircle, PlayCircle, Loader2, MonitorPlay, Check } from 'lucide-react'
+import { Upload, Image as ImageIcon, Video, Trash2, PauseCircle, PlayCircle, Loader2, Tv, Check } from 'lucide-react'
 import { Button } from './ui/Button'
 
 interface Slider {
@@ -39,7 +39,6 @@ export default function SliderManager() {
       const response = await fetch(`${API_URL}/sliders/`)
       if (!response.ok) throw new Error(`Error ${response.status}`)
       const data = await response.json()
-      
       if (data && typeof data === 'object' && 'results' in data) {
         setSliders(Array.isArray(data.results) ? data.results : [])
       } else if (Array.isArray(data)) {
@@ -48,7 +47,6 @@ export default function SliderManager() {
         setSliders([])
       }
     } catch (err) {
-      console.error('Error cargando sliders:', err)
       setSliders([])
       setError(err instanceof Error ? err.message : 'Error de conexión')
     } finally {
@@ -56,21 +54,14 @@ export default function SliderManager() {
     }
   }
 
-  useEffect(() => {
-    loadSliders()
-  }, [])
+  useEffect(() => { loadSliders() }, [])
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
-    if (file.type.startsWith('video/')) {
-      setMediaType('VIDEO')
-    } else if (file.type.startsWith('image/')) {
-      setMediaType('IMAGE')
-    }
+    if (file.type.startsWith('video/')) setMediaType('VIDEO')
+    else if (file.type.startsWith('image/')) setMediaType('IMAGE')
     const reader = new FileReader()
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string)
-    }
+    reader.onloadend = () => setPreviewUrl(reader.result as string)
     reader.readAsDataURL(file)
   }
 
@@ -79,55 +70,30 @@ export default function SliderManager() {
     if (file) handleFileSelect(file)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
     const file = e.dataTransfer.files?.[0]
-    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
-      handleFileSelect(file)
-    }
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) handleFileSelect(file)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedFile || !title) return
-
     setIsUploading(true)
     const formData = new FormData()
     formData.append('title', title)
     formData.append('media_type', mediaType)
     formData.append('duration', duration.toString())
-    
-    if (mediaType === 'IMAGE') {
-      formData.append('image', selectedFile)
-    } else {
-      formData.append('video', selectedFile)
-    }
-    
+    formData.append(mediaType === 'IMAGE' ? 'image' : 'video', selectedFile)
     formData.append('order', '0')
     formData.append('is_active', 'true')
-
     try {
-      const response = await fetch(`${API_URL}/sliders/`, {
-        method: 'POST',
-        body: formData,
-      })
+      const response = await fetch(`${API_URL}/sliders/`, { method: 'POST', body: formData })
       if (!response.ok) throw new Error('Error subiendo slider')
-      
       resetForm()
       loadSliders()
-    } catch (err) {
-      console.error('Error:', err)
+    } catch {
       alert('Error al subir el slider')
     } finally {
       setIsUploading(false)
@@ -146,324 +112,285 @@ export default function SliderManager() {
     if (!deleteModal.slider?.id) return
     try {
       const response = await fetch(`${API_URL}/sliders/${deleteModal.slider.id}/`, { method: 'DELETE' })
-      if (!response.ok) throw new Error('Error eliminando slider')
+      if (!response.ok) throw new Error('Error eliminando')
       setSliders(sliders.filter(s => s.id !== deleteModal.slider!.id))
-      setDeleteModal({ show: false, slider: null })
-    } catch (err) {
-      console.error('Error:', err)
+    } finally {
       setDeleteModal({ show: false, slider: null })
     }
   }
 
   const handleToggleActive = async (slider: Slider) => {
-    const updatedSliders = sliders.map(s => s.id === slider.id ? { ...s, is_active: !s.is_active } : s)
-    setSliders(updatedSliders)
-    
+    setSliders(sliders.map(s => s.id === slider.id ? { ...s, is_active: !s.is_active } : s))
     try {
       const formData = new FormData()
       formData.append('is_active', (!slider.is_active).toString())
-      const response = await fetch(`${API_URL}/sliders/${slider.id}/`, {
-        method: 'PATCH',
-        body: formData,
-      })
-      if (!response.ok) throw new Error('Error actualizando slider')
-    } catch (err) {
-      console.error('Error:', err)
+      await fetch(`${API_URL}/sliders/${slider.id}/`, { method: 'PATCH', body: formData })
+    } catch {
       loadSliders()
     }
   }
 
-  const getMediaUrl = (slider: Slider) => {
-    if (slider.media_type === 'IMAGE') {
-      return slider.image_url || slider.image || ''
-    }
-    return slider.video_url || slider.video || ''
-  }
+  const getMediaUrl = (slider: Slider) =>
+    slider.media_type === 'IMAGE'
+      ? slider.image_url || slider.image || ''
+      : slider.video_url || slider.video || ''
 
   return (
-    <div className="max-w-7xl mx-auto pb-12 space-y-8">
-      
-      {/* SECCIÓN 1: FORMULARIO ALTA DE CONTENIDO (Compacto y Organizado) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3 bg-gray-50/30 rounded-t-2xl">
-          <UploadCloud className="w-5 h-5 text-blue-600" />
+    <div className="space-y-6">
+
+      {/* ── Subir Nuevo Medio ── */}
+      <section className="rounded-xl border border-[#1e293b] bg-[#131B2C] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-[#1e293b] bg-[#0f1c2e]/40">
+          <div className="p-1.5 rounded-lg bg-[#00b4d8]/20">
+            <Upload className="w-4 h-4 text-[#00b4d8]" />
+          </div>
           <div>
-            <h2 className="text-[17px] font-bold text-gray-900 leading-tight">Subir Nuevo Flyer o Video</h2>
-            <p className="text-xs text-gray-500">Aparecerá en los televisores de la sala de espera.</p>
+            <h3 className="font-semibold text-white text-sm">Subir Nuevo Medio</h3>
+            <p className="text-xs text-[#64748b]">Aparecerá en los televisores de la sala de espera</p>
           </div>
         </div>
 
-        <div className="p-8">
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 lg:gap-12 items-start">
-            
-            {/* 1. Área de Archivo (Upload) - Grid Columna Fija */}
-            <div className="flex flex-col w-full h-full">
-              <label className="block text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider text-xs">Añadir Medio Visual</label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              
-              {!previewUrl ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className={`w-full h-48 sm:h-56 md:h-auto md:aspect-square border-[3px] border-dashed rounded-[24px] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 p-6 text-center shadow-sm
-                    ${isDragging ? 'border-indigo-400 bg-indigo-50/80 scale-105' : 'border-gray-200 bg-gray-50/50 hover:border-indigo-300 hover:bg-indigo-50/30 hover:scale-[1.02]'}`}
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors ${isDragging ? 'bg-indigo-100' : 'bg-white shadow-sm border border-gray-100'}`}>
-                    <UploadCloud className={`w-7 h-7 ${isDragging ? 'text-indigo-600' : 'text-gray-500'}`} />
-                  </div>
-                  <span className="text-base font-bold text-gray-800">Cargar Archivo</span>
-                  <span className="text-[13px] text-gray-500 mt-2 max-w-[140px] leading-snug">Soporta formatos universales JPG o MP4</span>
-                </div>
-              ) : (
-                <div className="relative w-full h-48 sm:h-56 md:h-auto md:aspect-square rounded-[24px] overflow-hidden bg-black border border-gray-200 group shadow-md transition-all duration-300">
-                  {mediaType === 'IMAGE' ? (
-                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-                  ) : (
-                    <video src={previewUrl} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" controls={false} />
-                  )}
-                  {/* Botón Flotante para cambiar siempre visible en la esquina */}
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setPreviewUrl(null); }}
-                    className="absolute top-3 right-3 bg-red-500 text-white p-2.5 rounded-xl shadow-[0_4px_12px_rgba(239,68,68,0.4)] hover:bg-red-600 hover:scale-105 active:scale-95 transition-all backdrop-blur-md"
-                    title="Quitar archivo seleccionado"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  {/* Etiqueta de archivo cargado */}
-                  <div className="absolute bottom-3 left-3">
-                    <span className="block truncate bg-black/80 font-semibold text-white text-[11px] px-3 py-1.5 rounded-lg shadow-sm border border-white/10">
-                      Archivo Listo para TV
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
+        {/* Form */}
+        <div className="p-6">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-[240px_1fr] gap-6 items-start">
 
-            {/* 2. Metadatos (Grid Columna Fluida: 1fr) */}
-            <div className="flex flex-col gap-6 pt-2 min-w-0 w-full overflow-hidden">
-              
+              {/* Zona upload */}
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wider text-xs">Título de Referencia Interna</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-gray-50/50 border border-gray-200 rounded-[14px] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 outline-none text-base transition-all shadow-sm placeholder:text-gray-400 font-medium"
-                  placeholder="Ej: Recomendaciones Vacunación Agosto"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wider text-xs">Formato Visual</label>
-                  <div className="relative">
-                    <select
-                      value={mediaType}
-                      onChange={(e) => setMediaType(e.target.value as 'IMAGE' | 'VIDEO')}
-                      className="w-full px-5 py-3.5 bg-gray-50/50 border border-gray-200 rounded-[14px] focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 appearance-none outline-none text-base font-semibold text-gray-800 shadow-sm cursor-pointer transition-all"
-                    >
-                      <option value="IMAGE">Imagen Fotográfica (Fija)</option>
-                      <option value="VIDEO">Video Multimedia (MP4)</option>
-                    </select>
-                    {/* Flecha elegante, sin iconos absolutos que pisen el texto */}
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
+                <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
+                {!previewUrl ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`flex flex-col items-center justify-center h-44 rounded-xl border-2 border-dashed cursor-pointer transition-all ${
+                      isDragging ? 'border-[#00b4d8] bg-[#00b4d8]/10' : 'border-[#1e293b] hover:border-[#00b4d8]/50 hover:bg-[#0f1c2e]/50'
+                    }`}
+                  >
+                    <div className="p-3 rounded-full bg-[#00b4d8]/10 mb-3">
+                      <Upload className="w-6 h-6 text-[#00b4d8]" />
                     </div>
+                    <p className="text-sm font-medium text-white">Cargar Archivo</p>
+                    <p className="text-xs text-[#64748b] mt-1">JPG, PNG o MP4</p>
                   </div>
-                </div>
-
-                {mediaType === 'IMAGE' && (
-                  <div>
-                    <label className="block text-sm font-bold text-gray-800 mb-2 uppercase tracking-wider text-xs">Duración (Segundos)</label>
-                    <div className="relative overflow-hidden rounded-[14px]">
-                      <input
-                        type="number"
-                        min="3"
-                        max="300"
-                        value={duration}
-                        onChange={(e) => setDuration(parseInt(e.target.value))}
-                        className="w-full px-5 py-3.5 bg-gray-50/50 border border-gray-200 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 outline-none text-base text-gray-800 font-bold shadow-sm transition-all text-center pr-12"
-                      />
-                      <div className="absolute inset-y-0 right-0 py-3.5 pr-4 flex items-center bg-gray-50/0 pointer-events-none">
-                         <span className="text-gray-400 font-medium text-sm">s.</span>
-                      </div>
-                    </div>
+                ) : (
+                  <div className="relative h-44 rounded-xl overflow-hidden bg-black border border-[#1e293b]">
+                    {mediaType === 'IMAGE'
+                      ? <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                      : <video src={previewUrl} className="w-full h-full object-cover" />
+                    }
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedFile(null); setPreviewUrl(null) }}
+                      className="absolute top-2 right-2 bg-red-500/80 text-white p-1.5 rounded-lg hover:bg-red-500 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 )}
               </div>
 
-              {/* Guardar - Alineado a la derecha, Uiverse premium buttons sin overrides molestos */}
-              <div className="mt-auto flex flex-col sm:flex-row items-center justify-end gap-5 pt-8">
-                <Button 
-                  type="button" 
-                  onClick={resetForm}
-                  disabled={!selectedFile && !title}
-                  className="w-full sm:w-auto px-6 py-2 border-gray-300 text-gray-500 hover:bg-gray-100"
-                >
-                  Limpiar Todo
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isUploading || !selectedFile || !title}
-                  className="w-full sm:w-auto !bg-indigo-600 !text-white !border-indigo-600 hover:!bg-gray-900 shadow-md flex items-center justify-center gap-2"
-                >
-                  {isUploading ? (
-                    <>
-                       <Loader2 className="w-5 h-5 animate-spin text-white" /> Procesando
-                    </>
-                  ) : (
-                    <>
-                       <Check className="w-5 h-5" /> Publicar en TV
-                    </>
+              {/* Campos */}
+              <div className="flex flex-col gap-4">
+                {/* Título */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[#64748b] uppercase tracking-wider">Título Referencia</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ej: Recomendaciones Vacunación"
+                    required
+                    className="w-full px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white placeholder-[#475569] focus:outline-none focus:border-[#00b4d8]/50 text-sm"
+                  />
+                </div>
+
+                {/* Formato + Duración */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[#64748b] uppercase tracking-wider">Formato Visual</label>
+                    <div className="relative">
+                      <select
+                        value={mediaType}
+                        onChange={(e) => setMediaType(e.target.value as 'IMAGE' | 'VIDEO')}
+                        className="w-full px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white focus:outline-none focus:border-[#00b4d8]/50 text-sm appearance-none cursor-pointer pr-8"
+                      >
+                        <option value="IMAGE">Imagen (Fija)</option>
+                        <option value="VIDEO">Video (Reproducible)</option>
+                      </select>
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748b]">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {mediaType === 'IMAGE' && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium text-[#64748b] uppercase tracking-wider">Duración (segundos)</label>
+                      <div className="flex items-center gap-3 pt-1">
+                        <input
+                          type="range"
+                          min={5}
+                          max={60}
+                          step={5}
+                          value={duration}
+                          onChange={(e) => setDuration(parseInt(e.target.value))}
+                          className="flex-1 accent-[#00b4d8] h-1.5"
+                        />
+                        <span className="text-base font-semibold text-white font-mono w-10 text-right">{duration}s</span>
+                      </div>
+                    </div>
                   )}
-                </Button>
+                </div>
+
+                {/* Botones */}
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    onClick={resetForm}
+                    disabled={!selectedFile && !title}
+                  >
+                    Limpiar Todo
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    disabled={isUploading || !selectedFile || !title}
+                  >
+                    {isUploading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Procesando</>
+                      : <><Check className="w-4 h-4" /> Publicar en TV</>
+                    }
+                  </Button>
+                </div>
               </div>
             </div>
-
           </form>
         </div>
-      </div>
+      </section>
 
-
-      {/* SECCIÓN 2: LISTA DE REPRODUCCIÓN ACTUAL */}
-      <div className="bg-white rounded-[20px] shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 md:px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <div className="flex items-center gap-4">
-            <MonitorPlay className="w-7 h-7 text-green-600" />
-            <h2 className="text-xl font-bold text-gray-900">Lista de Reproducción Activa</h2>
+      {/* ── Modo TV Live ── */}
+      <section className="rounded-xl border border-[#1e293b] bg-[#131B2C] overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e293b] bg-[#0f1c2e]/40">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-[#0ea5e9]/20">
+              <Tv className="w-4 h-4 text-[#0ea5e9]" />
+            </div>
+            <h3 className="font-semibold text-white text-sm">Modo TV Live</h3>
           </div>
-          <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-bold">
-            {sliders.length} Elementos
+          <span className="text-xs font-medium text-[#94a3b8] bg-[#1e293b] px-2.5 py-1 rounded-full">
+            {sliders.length} elementos
           </span>
         </div>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 text-[#1e3a5f] animate-spin mb-4" />
-            <p className="text-gray-500 font-medium">Sincronizando con televisores...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 text-red-600 p-8 flex flex-col items-center justify-center gap-4">
-            <p className="font-bold">{error}</p>
-            <Button variant="secondary" onClick={loadSliders}>Reintentar</Button>
-          </div>
-        ) : sliders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-            <ImageIcon className="w-16 h-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">No tienes contenido subido</h3>
-            <p className="text-gray-500 max-w-sm">Utiliza el formulario de arriba para enviar fotos y videos a las pantallas de la clínica.</p>
-          </div>
-        ) : (
-          <div className="p-6 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="p-6">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 text-[#00b4d8] animate-spin mb-3" />
+              <p className="text-sm text-[#64748b]">Sincronizando con televisores...</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-10 text-red-400 gap-3">
+              <p className="text-sm font-medium">{error}</p>
+              <button onClick={loadSliders} className="px-4 py-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs transition-all">
+                Reintentar
+              </button>
+            </div>
+          ) : sliders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="p-4 rounded-full bg-[#1e293b]/50 mb-4">
+                <ImageIcon className="w-10 h-10 text-[#64748b]/30" />
+              </div>
+              <h4 className="text-base font-semibold text-white mb-1">No hay contenido</h4>
+              <p className="text-sm text-[#64748b] max-w-xs">
+                Cargue archivos multimedia para alimentar las pantallas de la sala de espera.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {sliders.map((slider) => (
-                <div 
-                  key={slider.id} 
-                  className={`flex flex-col bg-white rounded-xl shadow-sm border-2 overflow-hidden transition-all duration-300 ${
-                    slider.is_active ? 'border-gray-200 hover:border-[#1e3a5f]/30' : 'border-gray-200 bg-gray-50 opacity-80'
-                  }`}
+                <div
+                  key={slider.id}
+                  className={`group flex flex-col rounded-xl border overflow-hidden transition-all ${
+                    slider.is_active ? 'border-[#1e293b] hover:border-[#00b4d8]/30' : 'border-[#1e293b] opacity-60'
+                  } bg-[#0f1c2e]`}
                 >
-                  {/* Vista Previa Intuitiva */}
-                  <div className="relative w-full aspect-video bg-black border-b border-gray-200">
-                    {slider.media_type === 'IMAGE' ? (
-                      <img src={getMediaUrl(slider)} alt={slider.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <video src={getMediaUrl(slider)} className="w-full h-full object-cover" muted />
-                    )}
-                    
-                    {/* Status Global siempre visible */}
+                  <div className="relative w-full aspect-video bg-[#1e293b]">
+                    {slider.media_type === 'IMAGE'
+                      ? <img src={getMediaUrl(slider)} alt={slider.title} className="w-full h-full object-cover" />
+                      : <video src={getMediaUrl(slider)} className="w-full h-full object-cover" muted />
+                    }
                     <div className="absolute top-2 right-2">
-                      <span className={`px-2.5 py-1 rounded-md text-xs font-bold text-white shadow-sm flex items-center gap-1.5 backdrop-blur-sm ${
-                        slider.is_active ? 'bg-green-600 border border-green-500' : 'bg-gray-600 border border-gray-500'
+                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-white ${
+                        slider.is_active ? 'bg-[#22c55e]/80' : 'bg-[#334155]/80'
                       }`}>
-                        <div className={`w-2 h-2 rounded-full bg-white ${slider.is_active ? 'animate-pulse' : ''}`} />
-                        {slider.is_active ? 'EN TV' : 'APAGADO'}
+                        <span className={`w-1.5 h-1.5 rounded-full bg-white ${slider.is_active ? 'animate-pulse' : ''}`} />
+                        {slider.is_active ? 'En TV' : 'Apagado'}
                       </span>
                     </div>
-                    
-                    {/* Badge Formato */}
                     <div className="absolute bottom-2 left-2">
-                      <span className="bg-black/70 text-white px-2 py-1 rounded text-xs font-bold flex items-center gap-1.5 border border-white/20">
-                        {slider.media_type === 'IMAGE' ? <ImageIcon className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+                      <span className="flex items-center gap-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[10px]">
+                        {slider.media_type === 'IMAGE' ? <ImageIcon className="w-3 h-3" /> : <Video className="w-3 h-3" />}
                         {slider.duration}s
                       </span>
                     </div>
                   </div>
-
-                  {/* Datos Claros y Siempre Visibles */}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <h4 className="font-bold text-gray-900 text-[16px] line-clamp-1 mb-1" title={slider.title}>
-                      {slider.title}
-                    </h4>
-                    
-                    <p className="text-xs font-medium text-gray-400 mb-4">
-                      Subido: {new Date(slider.created_at).toLocaleDateString()}
-                    </p>
-
-                    {/* Botones Explícitos y Cómodos de Apretar */}
-                    <div className="grid grid-cols-2 gap-2 mt-auto">
-                      <Button 
+                  <div className="p-3 flex flex-col gap-2">
+                    <div>
+                      <p className="font-medium text-white text-sm truncate">{slider.title}</p>
+                      <p className="text-[10px] text-[#64748b]">{new Date(slider.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
                         onClick={() => handleToggleActive(slider)}
-                        variant={slider.is_active ? 'secondary' : 'success'}
-                        className={`!px-0 w-full !min-h-[40px] ${slider.is_active ? '!text-gray-600' : '!bg-green-600'}`}
+                        className={`flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                          slider.is_active
+                            ? 'border-[#1e293b] text-[#94a3b8] hover:bg-[#1e293b]'
+                            : 'border-[#22c55e]/30 text-[#22c55e] bg-[#22c55e]/10 hover:bg-[#22c55e]/20'
+                        }`}
                       >
-                        {slider.is_active ? (
-                          <><PauseCircle className="w-4 h-4 ml-1" /> Apagar</>
-                        ) : (
-                          <><PlayCircle className="w-4 h-4 ml-1" /> Activar</>
-                        )}
-                      </Button>
-                      
-                      <Button 
+                        {slider.is_active ? <><PauseCircle className="w-3.5 h-3.5" /> Apagar</> : <><PlayCircle className="w-3.5 h-3.5" /> Activar</>}
+                      </button>
+                      <button
                         onClick={() => setDeleteModal({ show: true, slider })}
-                        variant="secondary"
-                        className="!px-0 w-full !text-red-600 !border-red-200 hover:!bg-red-50 !min-h-[40px]"
+                        className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all"
                       >
-                        <Trash2 className="w-4 h-4" /> Borrar
-                      </Button>
+                        <Trash2 className="w-3.5 h-3.5" /> Borrar
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
 
-      {/* Modal Intuitivo de Eliminación */}
+      {/* Modal eliminar */}
       {deleteModal.show && deleteModal.slider && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-[20px] shadow-2xl max-w-sm w-full p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-8 h-8" />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#131B2C] border border-[#1e293b] rounded-2xl shadow-2xl max-w-sm w-full p-7 text-center">
+            <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6" />
             </div>
-            
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¿Eliminar Contenido?</h3>
-            <p className="text-gray-500 mb-8">
-              Esta acción borrará el anuncio <br/>
-              <span className="font-bold text-gray-800">"{deleteModal.slider.title}"</span><br/>
-              y no podrás recuperarlo.
+            <h3 className="text-base font-semibold text-white mb-2">¿Eliminar Contenido?</h3>
+            <p className="text-sm text-[#64748b] mb-6">
+              Se borrará <span className="font-semibold text-white">"{deleteModal.slider.title}"</span> permanentemente.
             </p>
-            
-            <div className="flex flex-col gap-3">
-              <Button onClick={handleDelete} variant="primary" className="!bg-red-600 !border-red-600 hover:!bg-red-700 w-full text-base">
+            <div className="flex flex-col gap-2">
+              <button onClick={handleDelete} className="w-full py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-all">
                 Borrar Definitivamente
-              </Button>
-              <Button onClick={() => setDeleteModal({ show: false, slider: null })} variant="secondary" className="w-full text-base">
-                Cancelar y Volver
-              </Button>
+              </button>
+              <button onClick={() => setDeleteModal({ show: false, slider: null })} className="w-full py-2.5 rounded-lg border border-[#1e293b] text-[#94a3b8] hover:bg-[#1e293b] text-sm font-medium transition-all">
+                Cancelar
+              </button>
             </div>
           </div>
         </div>

@@ -62,3 +62,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Recursos de referencia (no commitear)
+recursos frontend/

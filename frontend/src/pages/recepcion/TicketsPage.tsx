@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { StatsResumen } from '../../components/recepcion/StatsResumen'
 import { PanelLlamados } from '../../components/recepcion/PanelLlamados'
 import { TurnosCompletados } from '../../components/recepcion/TurnosCompletados'
-import { Users, MonitorPlay } from 'lucide-react'
+import { Users, MonitorPlay, Loader2 } from 'lucide-react'
 import { Navbar } from '../../components/layout/Navbar'
 
 type SectionType = 'turnos' | 'sliders'
@@ -139,15 +139,12 @@ export default function TicketsPage() {
   const calledTickets = tickets.filter((t) => t.status === 'CALLED')
   const attendedTickets = tickets.filter((t) => t.status === 'ATTENDED')
 
-  // Atajos de teclado Súper Velocidad 
   useEffect(() => {
     if (activeSection !== 'turnos') return;
     
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar si el usuario está escribiendo o en un input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       
-      // ESPACIO = LLAMAR PRÓXIMO EN ESPERA
       if (e.code === 'Space') {
         e.preventDefault();
         if (waitingTickets.length > 0) {
@@ -156,7 +153,6 @@ export default function TicketsPage() {
           toast.info('No hay turnos en espera para llamar.');
         }
       } 
-      // ENTER = MARCAR COMO ATENDIDO (El más antiguo llamado)
       else if (e.code === 'Enter') {
         e.preventDefault();
         if (calledTickets.length > 0) {
@@ -183,8 +179,7 @@ export default function TicketsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col">
-      {/* Navbar Superior - Estilo Red Social / App Moderna */}
+    <div className="min-h-screen bg-[#0f1c2e] flex flex-col font-sans overflow-x-hidden">
       <Navbar 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
@@ -194,45 +189,41 @@ export default function TicketsPage() {
         loadTickets={loadTickets}
       />
 
-      {/* Main Content Area */}
+      <main className="flex-1 p-6 w-full">
+        {activeSection === 'turnos' ? (
+          <div className="max-w-[1400px] mx-auto space-y-6">
+            
+            <StatsResumen 
+              total={tickets.length} 
+              waiting={waitingTickets.length} 
+              called={calledTickets.length} 
+              attended={attendedTickets.length} 
+            />
 
-        {/* Content Area */}
-        <main className="flex-1 px-8 lg:px-12 py-10 overflow-auto bg-[#f8fafc]">
-          {activeSection === 'turnos' ? (
-            <div className="max-w-7xl mx-auto">
-              
-              <StatsResumen 
-                total={tickets.length} 
-                waiting={waitingTickets.length} 
-                called={calledTickets.length} 
-                attended={attendedTickets.length} 
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center py-24 rounded-xl border border-[#1e293b] bg-[#131B2C]">
+                <Loader2 className="w-10 h-10 text-[#00b4d8] animate-spin mb-3" />
+                <p className="text-sm text-[#64748b]">Sincronizando sistema...</p>
+              </div>
+            ) : (
+              <PanelLlamados 
+                waitingTickets={waitingTickets} 
+                calledTickets={calledTickets} 
+                handleCallTicket={handleCallTicket} 
+                handleAttendTicket={handleAttendTicket}
+                handleCancelTicket={handleCancelTicket}
+                handleRecallTicket={handleRecallTicket} 
               />
+            )}
 
-              {isLoading ? (
-                <div className="text-center py-20">
-                  <svg className="animate-spin h-10 w-10 text-[#1e3a5f] mx-auto mb-4" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  <p className="text-gray-500 text-lg">Cargando turnos operacionales...</p>
-                </div>
-              ) : (
-                <PanelLlamados 
-                  waitingTickets={waitingTickets} 
-                  calledTickets={calledTickets} 
-                  handleCallTicket={handleCallTicket} 
-                  handleAttendTicket={handleAttendTicket}
-                  handleCancelTicket={handleCancelTicket}
-                  handleRecallTicket={handleRecallTicket} 
-                />
-              )}
-
-              <TurnosCompletados attendedTickets={attendedTickets} />
-            </div>
-          ) : (
+            <TurnosCompletados attendedTickets={attendedTickets} />
+          </div>
+        ) : (
+          <div className="max-w-[1400px] mx-auto">
             <SliderManager />
-          )}
-        </main>
-      </div>
-  )
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
