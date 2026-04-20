@@ -33,7 +33,7 @@ Gestión completa de turnos con atajos de teclado
 
 ## 🚀 Inicio Rápido
 
-### Desarrollo Local
+### Desarrollo Local (Linux/Mac)
 ```bash
 git clone https://github.com/Angel-Codes-842/systurno.git
 cd systurno
@@ -41,12 +41,29 @@ cd systurno
 ./start.sh    # Inicia el sistema
 ```
 
+### Desarrollo Local (Windows)
+```bat
+git clone https://github.com/Angel-Codes-842/systurno.git
+cd systurno
+setup.bat     :: Instala todo automáticamente
+start.bat     :: Inicia el sistema
+```
+> Ejecutar como **Administrador** para evitar problemas de permisos.
+
 ### Producción (Ubuntu Server)
 ```bash
 git clone https://github.com/Angel-Codes-842/systurno.git /opt/turnos
 cd /opt/turnos
 ./deploy.sh   # Instala Nginx, configura todo automáticamente
 ```
+
+### Producción (Windows Server)
+```bat
+git clone https://github.com/Angel-Codes-842/systurno.git
+cd systurno
+deploy.bat    :: Build del frontend + registra tareas en el Programador de tareas
+```
+> Requiere ejecutar como **Administrador**. Los servicios arrancan automáticamente al iniciar sesión.
 
 📖 **Guía detallada:** Ver [INSTALACION.md](INSTALACION.md)
 
@@ -86,8 +103,8 @@ cd /opt/turnos
 ## 📋 Requisitos
 
 - Python 3.10+
-- Node.js 18+
-- Ubuntu/Debian (para producción)
+- Node.js 20+
+- Ubuntu/Debian (para producción en Linux) o Windows 10/11 (para producción en Windows)
 
 ## 💻 Instalación
 
@@ -131,6 +148,7 @@ Para acceso en red local, reemplaza `localhost` con la IP del servidor.
 
 ## 🔧 Scripts Disponibles
 
+### Linux / Mac
 | Script | Descripción |
 |--------|-------------|
 | `./setup.sh` | Instalación inicial con auto-reparación |
@@ -141,6 +159,14 @@ Para acceso en red local, reemplaza `localhost` con la IP del servidor.
 | `./diagnose.sh` | Diagnóstico completo del sistema |
 | `./fix-permissions.sh` | Reparar problemas de permisos |
 | `./test-system.sh` | Pruebas automatizadas |
+
+### Windows
+| Script | Descripción |
+|--------|-------------|
+| `setup.bat` | Instalación inicial (venv, dependencias, migraciones) |
+| `start.bat` | Iniciar backend y frontend en ventanas separadas |
+| `deploy.bat` | Build de producción + registro en Programador de tareas |
+| `start-kiosko.bat` | Abrir Chrome en modo kiosko (IP detectada automáticamente) |
 
 ## 📱 Configuración de Dispositivos
 
@@ -327,12 +353,16 @@ Agregar a `/etc/xdg/lxsession/LXDE-pi/autostart`:
 ## 📁 Estructura
 
 ```
-├── backend/      # Django + Daphne (WebSocket)
-├── frontend/     # React + Vite
-├── deploy.sh     # Deploy producción (Nginx + systemd)
-├── update.sh     # Actualizar código
-├── setup.sh      # Setup desarrollo
-└── start.sh      # Iniciar desarrollo
+├── backend/          # Django + Daphne (WebSocket)
+├── frontend/         # React + Vite
+├── deploy.sh         # Deploy producción Linux (Nginx + systemd)
+├── deploy.bat        # Deploy producción Windows (Task Scheduler)
+├── update.sh         # Actualizar código
+├── setup.sh          # Setup desarrollo Linux
+├── setup.bat         # Setup desarrollo Windows
+├── start.sh          # Iniciar desarrollo Linux
+├── start.bat         # Iniciar desarrollo Windows
+└── start-kiosko.bat  # Kiosko Windows (IP auto-detectada)
 ```
 
 ---
