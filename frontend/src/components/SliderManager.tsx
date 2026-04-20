@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { API_URL } from '../config/api'
-import { Image as ImageIcon, Video, UploadCloud, Trash2, Power, PauseCircle, PlayCircle, Loader2, MonitorPlay, Check } from 'lucide-react'
+import { Image as ImageIcon, Video, UploadCloud, Trash2, PauseCircle, PlayCircle, Loader2, MonitorPlay, Check } from 'lucide-react'
 import { Button } from './ui/Button'
 
 interface Slider {
