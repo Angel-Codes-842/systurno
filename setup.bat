@@ -101,24 +101,14 @@ echo.
 echo [*] Configurando Frontend...
 cd frontend
 
-:: Limpiar node_modules si hay problemas
-if exist "node_modules" (
-    npm list >nul 2>&1
-    if errorlevel 1 (
-        echo [!] Problemas detectados en node_modules, limpiando...
-        rmdir /s /q node_modules 2>nul
-        if exist "package-lock.json" del /f package-lock.json
-    )
-)
-
 :: Instalar dependencias Node
 echo [*] Instalando dependencias de Node.js...
-npm install
+call npm install
 if errorlevel 1 (
     echo [!] Primer intento fallido, reintentando tras limpiar...
     if exist "node_modules" rmdir /s /q node_modules
     if exist "package-lock.json" del /f package-lock.json
-    npm install
+    call npm install
     if errorlevel 1 (
         echo [ERROR] No se pudieron instalar las dependencias de npm.
         echo Soluciones manuales:
