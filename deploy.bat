@@ -103,62 +103,66 @@ if errorlevel 1 (
 echo [OK] Frontend compilado ^(dist/^)
 cd ..
 
-:: ─── Servicios Windows con NSSM ─────────────────────────────────────────────
+:: ─── Servicios con Task Scheduler (nativo Windows) ─────────────────────────
 echo.
-echo [*] Verificando NSSM para servicios de Windows...
-nssm version >nul 2>&1
-if errorlevel 1 (
-    echo [!] NSSM no encontrado. El sistema funcionara en modo manual.
-    echo     Para instalar NSSM: https://nssm.cc/download
-    echo     Coloca nssm.exe en una carpeta del PATH y vuelve a ejecutar deploy.bat
-    goto :sin_nssm
-)
-
-:: Registrar servicio Backend
-echo [*] Registrando servicio: TurnosBackend...
+echo [*] Registrando tareas en el Programador de tareas de Windows...
 set PROJ_DIR=%CD%
-nssm stop TurnosBackend >nul 2>&1
-nssm remove TurnosBackend confirm >nul 2>&1
-nssm install TurnosBackend "%PROJ_DIR%\backend\venv\Scripts\python.exe"
-nssm set TurnosBackend AppParameters "manage.py runserver 0.0.0.0:%BACKEND_PORT%"
-nssm set TurnosBackend AppDirectory "%PROJ_DIR%\backend"
-nssm set TurnosBackend DisplayName "Sistema de Turnos - Backend"
-nssm set TurnosBackend Start SERVICE_AUTO_START
-nssm set TurnosBackend AppStdout "%PROJ_DIR%\backend.log"
-nssm set TurnosBackend AppStderr "%PROJ_DIR%\backend.log"
-nssm start TurnosBackend
 
-:: Registrar servicio Frontend (sirve el build con un servidor estatico)
-:: Requiere: npm install -g serve
+:: Instalar servidor estatico para el frontend
 where serve >nul 2>&1
 if errorlevel 1 (
     echo [*] Instalando servidor estatico ^(serve^)...
     call npm install -g serve
 )
 
-echo [*] Registrando servicio: TurnosFrontend...
+:: Eliminar tareas anteriores si existen
+schtasks /delete /tn "TurnosBackend" /f >nul 2>&1
+schtasks /delete /tn "TurnosFrontend" /f >nul 2>&1
+
+:: Crear scripts de arranque auxiliares
+echo [*] Creando scripts de arranque...
+(
+    echo @echo off
+    echo cd /d "%PROJ_DIR%\backend"
+    echo venv\Scripts\python manage.py runserver 0.0.0.0:%BACKEND_PORT% >> "%PROJ_DIR%\backend.log" 2^>^&1
+) > "%PROJ_DIR%\_run_backend.bat"
+
 for /f %%p in ('where serve') do set SERVE_PATH=%%p
-nssm stop TurnosFrontend >nul 2>&1
-nssm remove TurnosFrontend confirm >nul 2>&1
-nssm install TurnosFrontend "%SERVE_PATH%"
-nssm set TurnosFrontend AppParameters "-s dist -l %FRONTEND_PORT%"
-nssm set TurnosFrontend AppDirectory "%PROJ_DIR%\frontend"
-nssm set TurnosFrontend DisplayName "Sistema de Turnos - Frontend"
-nssm set TurnosFrontend Start SERVICE_AUTO_START
-nssm set TurnosFrontend AppStdout "%PROJ_DIR%\frontend.log"
-nssm set TurnosFrontend AppStderr "%PROJ_DIR%\frontend.log"
-nssm start TurnosFrontend
+(
+    echo @echo off
+    echo cd /d "%PROJ_DIR%\frontend"
+    echo "%SERVE_PATH%" -s dist -l %FRONTEND_PORT% >> "%PROJ_DIR%\frontend.log" 2^>^&1
+) > "%PROJ_DIR%\_run_frontend.bat"
 
-echo [OK] Servicios registrados e iniciados
-goto :resumen
+:: Registrar tarea Backend - arranca al iniciar sesion
+schtasks /create /tn "TurnosBackend" ^
+    /tr "\"%PROJ_DIR%\_run_backend.bat\"" ^
+    /sc onlogon /delay 0000:10 ^
+    /ru "%USERNAME%" /rl highest /f
+if errorlevel 1 (
+    echo [ERROR] No se pudo registrar la tarea TurnosBackend.
+    echo         Intenta ejecutar deploy.bat como Administrador.
+    pause & exit /b 1
+)
 
-:sin_nssm
-echo.
-echo [!] Para iniciar manualmente ejecuta start.bat
-echo [!] Para que arranquen solos al iniciar Windows, instala NSSM y
-echo     vuelve a ejecutar deploy.bat
+:: Registrar tarea Frontend - arranca al iniciar sesion
+schtasks /create /tn "TurnosFrontend" ^
+    /tr "\"%PROJ_DIR%\_run_frontend.bat\"" ^
+    /sc onlogon /delay 0000:15 ^
+    /ru "%USERNAME%" /rl highest /f
+if errorlevel 1 (
+    echo [ERROR] No se pudo registrar la tarea TurnosFrontend.
+    pause & exit /b 1
+)
 
-:resumen
+:: Iniciar ahora sin esperar reinicio
+echo [*] Iniciando servicios...
+schtasks /run /tn "TurnosBackend" >nul
+timeout /t 4 /nobreak >nul
+schtasks /run /tn "TurnosFrontend" >nul
+
+echo [OK] Tareas registradas e iniciadas
+
 echo.
 echo ╔════════════════════════════════════════╗
 echo ║        OK  Deploy Completado           ║
@@ -169,9 +173,12 @@ echo   Kiosko:      http://%LOCAL_IP%:%FRONTEND_PORT%/kiosko
 echo   Turnos:      http://%LOCAL_IP%:%FRONTEND_PORT%/turnos
 echo   Sala Espera: http://%LOCAL_IP%:%FRONTEND_PORT%/sala-espera
 echo.
+echo Los servicios arrancan automaticamente al iniciar sesion en Windows.
+echo.
 echo Comandos utiles:
-echo   Ver estado:   nssm status TurnosBackend
-echo   Reiniciar:    nssm restart TurnosBackend
-echo   Detener:      nssm stop TurnosBackend ^& nssm stop TurnosFrontend
+echo   Ver tareas:   schtasks /query /tn "TurnosBackend"
+echo   Iniciar:      schtasks /run /tn "TurnosBackend"
+echo   Detener:      taskkill /f /im python.exe ^& taskkill /f /im node.exe
+echo   Logs:         backend.log  /  frontend.log
 echo.
 pause
