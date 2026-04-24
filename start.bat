@@ -2,6 +2,9 @@
 :: Sistema de Turnos - Inicio (Windows)
 setlocal enabledelayedexpansion
 
+:: Posicionarse siempre en la carpeta del script
+cd /d "%~dp0"
+
 set BACKEND_PORT=8000
 set FRONTEND_PORT=3000
 

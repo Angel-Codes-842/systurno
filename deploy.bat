@@ -1,8 +1,10 @@
 @echo off
 :: Sistema de Turnos - Deploy Produccion (Windows)
-:: Requiere: Python, Node.js, y opcionalmente NSSM para servicios de Windows
-::   NSSM: https://nssm.cc/download
+:: Requiere ejecutar como Administrador
 setlocal enabledelayedexpansion
+
+:: Posicionarse siempre en la carpeta del script sin importar desde dónde se ejecute
+cd /d "%~dp0"
 
 set BACKEND_PORT=8000
 set FRONTEND_PORT=3000

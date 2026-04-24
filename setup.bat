@@ -2,6 +2,9 @@
 :: Sistema de Turnos - Instalación Completa (Windows)
 setlocal enabledelayedexpansion
 
+:: Posicionarse siempre en la carpeta del script
+cd /d "%~dp0"
+
 echo ╔════════════════════════════════════════╗
 echo ║    Sistema de Turnos - Instalación     ║
 echo ╚════════════════════════════════════════╝
