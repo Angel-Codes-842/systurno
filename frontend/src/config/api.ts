@@ -32,5 +32,30 @@ const getWsUrl = () => {
 export const API_URL = getBaseUrl()
 export const WS_URL = getWsUrl()
 
+/**
+ * Normaliza una URL de media para que siempre use el host actual del backend.
+ * Soluciona el problema de URLs guardadas con IPs antiguas tras reinicio.
+ */
+export const resolveMediaUrl = (url: string | null | undefined): string => {
+  if (!url) return ''
+  try {
+    const parsed = new URL(url)
+    const host = window.location.hostname
+    const port = window.location.port
+    // En producción (puerto 80/443) el media va por Nginx en el mismo host
+    if (!port || port === '80' || port === '443') {
+      parsed.hostname = host
+      parsed.port = ''
+    } else {
+      // En desarrollo el backend siempre está en :8000
+      parsed.hostname = host
+      parsed.port = '8000'
+    }
+    return parsed.toString()
+  } catch {
+    return url
+  }
+}
+
 // Para debug
 console.log('API Config:', { API_URL, WS_URL, host: window.location.hostname })

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { API_URL } from '../config/api'
+import { API_URL, resolveMediaUrl } from '../config/api'
 import { Upload, Image as ImageIcon, Video, Trash2, PauseCircle, PlayCircle, Loader2, Tv, Check } from 'lucide-react'
 import { Button } from './ui/Button'
 
@@ -131,9 +131,11 @@ export default function SliderManager() {
   }
 
   const getMediaUrl = (slider: Slider) =>
-    slider.media_type === 'IMAGE'
-      ? slider.image_url || slider.image || ''
-      : slider.video_url || slider.video || ''
+    resolveMediaUrl(
+      slider.media_type === 'IMAGE'
+        ? slider.image_url || slider.image
+        : slider.video_url || slider.video
+    )
 
   return (
     <div className="space-y-6">

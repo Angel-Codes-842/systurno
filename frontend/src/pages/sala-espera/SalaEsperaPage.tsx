@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useWebSocket } from '../../contexts/WebSocketContext'
-import { API_URL } from '../../config/api'
+import { API_URL, resolveMediaUrl } from '../../config/api'
 
 interface DisplayInfo {
   ticketNumber: string
@@ -345,13 +345,13 @@ export default function SalaEsperaPage() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     {slider.media_type === 'IMAGE' && (slider.image_url || slider.image) ? (
                       <img
-                        src={slider.image_url || slider.image || ''}
+                        src={resolveMediaUrl(slider.image_url || slider.image)}
                         alt={slider.title}
                         className="w-full h-full object-cover"
                       />
                     ) : slider.media_type === 'VIDEO' && (slider.video_url || slider.video) ? (
                       <video
-                        src={slider.video_url || slider.video || ''}
+                        src={resolveMediaUrl(slider.video_url || slider.video)}
                         className="w-full h-full object-cover"
                         autoPlay
                         muted
