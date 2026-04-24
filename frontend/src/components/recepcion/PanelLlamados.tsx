@@ -1,5 +1,5 @@
 import React from 'react'
-import { Clock, Volume2, ChevronRight, CheckCircle2, XCircle, RefreshCw, CheckCircle, Phone } from 'lucide-react'
+import { Clock, Volume2, ChevronRight, XCircle, RefreshCw, CheckCircle, Phone } from 'lucide-react'
 import type { Ticket } from '../../types'
 import { Button } from '../ui/Button'
 
@@ -142,7 +142,7 @@ export const PanelLlamados: React.FC<PanelLlamadosProps> = ({
                 <p className="text-xs opacity-70">Llama al siguiente turno para comenzar</p>
               </div>
             ) : (
-              calledTickets.map((ticket, index) => {
+              calledTickets.map((ticket) => {
                 const svc = ticket.service_type ?? 'BUDGET'
                 const bg = ticketBg[svc] ?? 'bg-[#334155]'
                 return (
