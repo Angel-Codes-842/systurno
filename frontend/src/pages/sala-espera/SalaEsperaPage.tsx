@@ -347,12 +347,12 @@ export default function SalaEsperaPage() {
                       <img
                         src={resolveMediaUrl(slider.image_url || slider.image)}
                         alt={slider.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : slider.media_type === 'VIDEO' && (slider.video_url || slider.video) ? (
                       <video
                         src={resolveMediaUrl(slider.video_url || slider.video)}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         autoPlay
                         muted
                         loop
@@ -376,8 +376,7 @@ export default function SalaEsperaPage() {
       </main>
 
       {/* Footer Minimalista Aether */}
-      <footer className="bg-[#1a3152]/90 backdrop-blur-2xl py-5 px-12 flex justify-between items-center z-30 border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-        <p className="text-[#94a3b8] text-xs font-black uppercase tracking-[0.5em]">Biogenic v2.8 - Clinical Luminary UI</p>
+      <footer className="bg-[#1a3152]/90 backdrop-blur-2xl py-5 px-12 flex justify-end items-center z-30 border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4 px-5 py-2 bg-[#0f1c2e] rounded-full border border-white/10 shadow-inner">
             <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-[#6b9b37] shadow-[0_0_10px_rgba(83,225,111,0.8)] animate-pulse' : 'bg-[#ffb4ab]'}`}></span>

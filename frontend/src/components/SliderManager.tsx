@@ -210,8 +210,8 @@ export default function SliderManager() {
                 </div>
 
                 {/* Formato + Duración */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                <div className="flex items-end gap-4">
+                  <div className="flex-1 space-y-1.5">
                     <label className="text-xs font-medium text-[#64748b] uppercase tracking-wider">Formato Visual</label>
                     <div className="relative">
                       <select
@@ -233,17 +233,16 @@ export default function SliderManager() {
                   {mediaType === 'IMAGE' && (
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-[#64748b] uppercase tracking-wider">Duración (segundos)</label>
-                      <div className="flex items-center gap-3 pt-1">
+                      <div className="flex items-center gap-2">
                         <input
-                          type="range"
-                          min={5}
-                          max={60}
-                          step={5}
+                          type="number"
+                          min={1}
+                          max={3600}
                           value={duration}
-                          onChange={(e) => setDuration(parseInt(e.target.value))}
-                          className="flex-1 accent-[#00b4d8] h-1.5"
+                          onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="w-24 px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white focus:outline-none focus:border-[#00b4d8]/50 text-sm font-mono text-center"
                         />
-                        <span className="text-base font-semibold text-white font-mono w-10 text-right">{duration}s</span>
+                        <span className="text-sm text-[#64748b]">seg</span>
                       </div>
                     </div>
                   )}
