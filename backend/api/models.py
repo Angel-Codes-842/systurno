@@ -339,7 +339,7 @@ class Slider(models.Model):
         default='IMAGE',
         verbose_name='Tipo de medio'
     )
-    image = models.ImageField(
+    image = models.FileField(
         upload_to='sliders/',
         verbose_name='Imagen',
         blank=True,
