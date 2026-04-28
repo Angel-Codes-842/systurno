@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { API_URL } from '../../config/api'
 import { toast } from 'sonner'
-import { Ticket as TicketIcon, CheckCircle2, Activity, Settings } from 'lucide-react'
+import { FileText, ClipboardList, Calculator, CheckCircle2, Loader2, Play } from 'lucide-react'
 
 interface Ticket {
   number: string
@@ -14,14 +14,14 @@ export default function KioskoPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  // Simular progreso numérico durante la carga
+  // Smooth progress bar simulation
   useEffect(() => {
     let interval: number;
     if (isGenerating) {
       setProgress(0);
       interval = window.setInterval(() => {
-        setProgress(prev => Math.min(prev + Math.floor(Math.random() * 15) + 5, 99))
-      }, 200)
+        setProgress(prev => Math.min(prev + Math.floor(Math.random() * 10) + 2, 95))
+      }, 100)
     } else {
       setProgress(100);
     }
@@ -37,42 +37,20 @@ export default function KioskoPage() {
           <style>
             @page { size: 80mm auto; margin: 0; }
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body {
-              font-family: 'Courier New', monospace;
-              text-align: center;
-              padding: 10px;
-              width: 80mm;
-            }
-            .header {
-              font-size: 14px;
-              font-weight: bold;
-              margin-bottom: 8px;
-              padding-bottom: 8px;
-              border-bottom: 1px dashed #000;
-            }
-            .label { font-size: 12px; margin-top: 10px; }
-            .ticket-number {
-              font-size: 48px;
-              font-weight: bold;
-              margin: 15px 0;
-              padding: 10px;
-              border: 3px solid #000;
-            }
-            .time { font-size: 12px; margin: 10px 0; }
-            .footer {
-              font-size: 11px;
-              margin-top: 10px;
-              padding-top: 10px;
-              border-top: 1px dashed #000;
-            }
+            body { font-family: 'Courier New', Courier, monospace; text-align: center; padding: 15px; width: 80mm; color: #000; }
+            .header { font-size: 16px; font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dotted #000; }
+            .label { font-size: 12px; margin-top: 15px; text-transform: uppercase; }
+            .ticket-number { font-size: 52px; font-weight: bold; margin: 15px 0; letter-spacing: -2px; }
+            .time { font-size: 13px; margin: 15px 0; }
+            .footer { font-size: 11px; margin-top: 15px; padding-top: 10px; border-top: 1px dotted #000; word-break: break-word; }
           </style>
         </head>
         <body onload="window.print()">
-          <div class="header">BIOGENIC - LABORATORIO</div>
-          <p class="label">Su turno es:</p>
+          <div class="header">BIOGENIC</div>
+          <p class="label">Su número de turno:</p>
           <div class="ticket-number">${ticketNumber}</div>
-          <p class="time">${ticketTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })} - ${ticketTime.toLocaleDateString('es-PY')}</p>
-          <p class="footer">Espere a ser llamado en la pantalla</p>
+          <p class="time">${ticketTime.toLocaleDateString('es-PY')} &nbsp; ${ticketTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}</p>
+          <p class="footer">Por favor, aguarde en sala de espera a ser llamado por su número.</p>
         </body>
       </html>
     `
@@ -104,216 +82,182 @@ export default function KioskoPage() {
         body: JSON.stringify({ service_type: serviceType })
       })
 
-      if (!response.ok) throw new Error('Error al generar ticket')
+      if (!response.ok) throw new Error('Error de conexión o validación')
 
       const data = await response.json()
       const ticketTime = new Date()
 
-      // Small delay para apreciar la nueva animación de carga
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      toast.success(`Turno ${data.ticket_number} generado correctamente`, {
-        duration: 3000,
-        position: 'top-center'
-      })
+      await new Promise(resolve => setTimeout(resolve, 600)) // Suave transición
 
       printTicket(data.ticket_number, ticketTime)
       setTicket({ number: data.ticket_number, time: ticketTime, serviceType })
-      setTimeout(() => setTicket(null), 7000)
+      
+      // Volver automáticamente al inicio
+      setTimeout(() => setTicket(null), 8000)
 
     } catch (err) {
       console.error('Error:', err)
-      toast.error('Error al generar el ticket. Por favor, asegúrese de que el sistema esté conectado.', {
-        duration: 5000,
-        position: 'top-center'
+      toast.error('No se pudo generar el turno. Por favor, intente nuevamente o avise a recepción.', {
+        position: 'top-center',
+        style: { background: 'var(--color-danger)', color: 'white', border: 'none' }
       })
     } finally {
       setIsGenerating(false)
     }
   }
 
-  // Componente de botón de servicio tipo Aether Clinical (Stitch Design)
+  // --- Corporate Minimalist Service Card ---
   const ServiceCard = ({ 
-    type, title, subtitle, icon: Icon, iconNode, colorClass, gradientClass, ringClass 
+    type, title, subtitle, icon: Icon, styling
   }: { 
     type: 'ANALYSIS' | 'RESULTS' | 'BUDGET', 
     title: string, 
     subtitle: string, 
-    icon?: any,
-    iconNode?: React.ReactNode,
-    colorClass: string,
-    gradientClass: string,
-    ringClass: string
+    icon: any,
+    styling: { lightBg: string, mainColor: string }
   }) => (
     <button
       onClick={() => generateTicket(type)}
       disabled={isGenerating}
-      className={`relative flex flex-col items-center justify-center w-full max-w-[400px] h-[450px] 
-                 bg-[#1a3152]/80 backdrop-blur-xl border-2 ${ringClass} rounded-3xl p-10 
-                 active:bg-[#24436e] active:scale-[0.96] transition-[background-color,transform,box-shadow] duration-300 ease-out shadow-[0_0_40px_rgba(30,58,95,0.3)] disabled:opacity-50 overflow-hidden touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
+      className={`relative flex flex-col items-center justify-center w-full max-w-[380px] h-[460px] 
+                 bg-surface border-2 border-border/60 rounded-[3rem] p-10 
+                 shadow-[0_8px_30px_rgb(0,0,0,0.06)] 
+                 active:scale-[0.95] active:shadow-inner active:bg-surface-2 transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]
+                 focus-visible:ring-4 disabled:opacity-60 disabled:cursor-not-allowed`}
+      aria-label={`Solicitar turno para ${title}`}
     >
-      <div className={`absolute inset-0 opacity-30 bg-gradient-to-br ${gradientClass} mix-blend-overlay`} />
-      
-      <div className={`relative bg-black/30 w-32 h-32 rounded-2xl flex items-center justify-center mb-10 border border-white/20 shadow-inner`}>
-        <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${gradientClass} opacity-30 blur-xl`} />
-        {iconNode
-          ? <span className={`text-7xl font-black ${colorClass} leading-none`}>{iconNode}</span>
-          : Icon && <Icon className={`w-16 h-16 ${colorClass} drop-shadow-md`} strokeWidth={2} />
-        }
+      <div className={`w-36 h-36 mb-12 rounded-[2.5rem] flex items-center justify-center ${styling.lightBg} shadow-inner`}>
+        <Icon className={`w-16 h-16 ${styling.mainColor} drop-shadow-sm`} strokeWidth={2} />
       </div>
       
-      <span className="relative text-4xl font-black text-[#ffffff] tracking-tight leading-tight mb-3">
-        {title}
-      </span>
-      <div className="relative mt-auto flex flex-col items-center gap-4">
-        <span className={`text-sm font-bold ${colorClass} uppercase tracking-[0.25em] bg-black/40 px-6 py-2 rounded-full border border-white/10`}>
-          {subtitle}
-        </span>
-        <span className="text-[#a8b8d0] text-xs uppercase font-bold tracking-widest animate-pulse mt-2">
-          Toque para imprimir
-        </span>
+      <div className="flex flex-col items-center text-center gap-3">
+        <span className="text-[2.2rem] font-extrabold tracking-tight text-text leading-none">{title}</span>
+        <span className="text-base font-bold text-text-muted opacity-90">{subtitle}</span>
+      </div>
+
+      <div className={`absolute bottom-8 flex items-center gap-2 ${styling.mainColor} font-bold opacity-80`}>
+        <span className="uppercase tracking-widest text-xs">Tocar para imprimir</span>
       </div>
     </button>
   )
 
+  const styles = {
+    ANALYSIS: { lightBg: 'bg-primary/10', mainColor: 'text-primary' },
+    RESULTS: { lightBg: 'bg-success/10', mainColor: 'text-success' },
+    BUDGET: { lightBg: 'bg-text-muted/10', mainColor: 'text-text-muted' }
+  }
+
   return (
-    <div className="min-h-screen bg-[#0f1c2e] flex items-center justify-center px-8 md:px-16 py-8 font-sans overflow-hidden relative" id="main-content">
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/4 left-1/4 w-[50vw] h-[50vw] bg-[#2563eb]/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[40vw] h-[40vw] bg-[#4b7522]/10 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-bg bg-gradient-to-br from-bg to-surface-2 flex flex-col relative overflow-hidden font-sans">
+      
+      {/* Background Decorators */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary opacity-[0.03] rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-success opacity-[0.03] rounded-full blur-[100px] pointer-events-none" />
 
-      {isGenerating ? (
-        // --- ESTADO DE CARGA ---
-        <div className="flex flex-col items-center justify-center animate-fade-in z-10 w-full max-w-md">
-           <div className="relative w-48 h-48 mb-12 flex items-center justify-center">
-             <div className="absolute inset-0 border-2 border-[#1a3152] rounded-full" />
-             <div className="absolute inset-0 border-2 border-t-[#6b9b37] border-r-transparent border-b-[#3b82f6] border-l-transparent rounded-full animate-spin" style={{ animationDuration: '3s' }} />
-             <div className="absolute inset-2 border-2 border-dashed border-white/10 rounded-full animate-spin" style={{ animationDuration: '10s', animationDirection: 'reverse' }} />
-             <Activity className="w-16 h-16 text-[#ffffff] animate-bio-pulse" strokeWidth={1} />
-             
-             {/* Scan line effect */}
-             <div className="absolute inset-0 overflow-hidden rounded-full">
-               <div className="absolute left-0 w-full h-1 bg-[#6b9b37] blur-[2px] animate-scan-line" />
+      {/* Corporate Header */}
+      <header className="w-full flex justify-center py-12 bg-surface/80 backdrop-blur-md border-b border-border/50 z-10 shadow-sm">
+        <img src="/logo.jpg" alt="Biogenic Laboratorio" className="h-[120px] w-auto object-contain opacity-100 drop-shadow-md" />
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col items-center justify-center px-8 py-10 z-10 w-full max-w-[1400px] mx-auto">
+        
+        {isGenerating ? (
+          // --- ESTADO DE CARGA (Minimalist Corporate Spinner) ---
+          <div className="flex flex-col items-center justify-center w-full max-w-sm" aria-live="polite">
+             <div className="w-24 h-24 bg-surface rounded-[2rem] flex items-center justify-center mb-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-border/50">
+               <Loader2 className="w-12 h-12 text-primary animate-spin" strokeWidth={2.5} />
              </div>
-           </div>
-           
-           <h2 className="text-3xl font-black text-[#ffffff] tracking-tight mb-4 text-center">
-             Procesando Solicitud
-           </h2>
-           
-           <div className="w-full bg-[#1a3152] h-1.5 rounded-full overflow-hidden mb-6">
-             <div 
-               className="h-full bg-gradient-to-r from-[#3b82f6] to-[#6b9b37] transition-all duration-200 ease-out"
-               style={{ width: `${progress}%` }}
-             />
-           </div>
-           
-           <p className="text-[#94a3b8] font-medium tracking-[0.2em] text-xs uppercase flex items-center gap-3">
-             <Settings className="w-4 h-4 animate-spin" style={{ animationDuration: '4s' }} />
-             Sincronizando Sistema
-           </p>
-        </div>
-      ) : !ticket ? (
-        // --- OPCIONES ---
-        <div className="text-center max-w-7xl mx-auto w-full z-10">
-          <div className="mb-16 flex flex-col items-center animate-fade-in relative">
-            <div className="bg-[#1a3152]/50 backdrop-blur-md p-6 rounded-xl border border-white/5 mb-8 shadow-2xl relative group">
-              <div className="absolute inset-0 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <img src="/logo.jpg" alt="Biogenic" className="h-16 md:h-24 w-auto object-contain opacity-100" />
-            </div>
-            <h1 className="text-5xl md:text-7xl font-black text-[#ffffff] tracking-tighter uppercase drop-shadow-2xl">
-              BIOGENIC
+             
+             <h2 className="text-3xl font-extrabold text-text tracking-tight mb-3 text-center">
+               Imprimiendo ticket
+             </h2>
+             <p className="text-text-muted font-medium text-lg mb-10 text-center">
+               Por favor aguarde un momento...
+             </p>
+             
+             {/* Smooth thick progress bar */}
+             <div className="w-full bg-border/50 h-3 rounded-full overflow-hidden shadow-inner" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+               <div 
+                 className="h-full bg-primary transition-all duration-300 ease-out rounded-full"
+                 style={{ width: `${progress}%` }}
+               />
+             </div>
+          </div>
+        ) : !ticket ? (
+          // --- OPCIONES ---
+          <div className="flex flex-col w-full items-center animate-fade-in relative">
+            <h1 className="text-5xl md:text-[4rem] font-extrabold text-text tracking-tighter mb-4 text-center leading-none">
+              Bienvenido a <span className="text-primary">Biogenic</span>
             </h1>
-            <div className="h-1 w-16 bg-gradient-to-r from-transparent via-[#93c5fd] to-transparent mt-6 opacity-30"></div>
+            <p className="text-xl text-text-muted font-bold mb-16 text-center max-w-3xl">
+              Toque el servicio que necesita en la pantalla para imprimir su turno.
+            </p>
+
+            <div className="flex flex-col lg:flex-row justify-center items-center gap-8 w-full">
+              <ServiceCard 
+                type="ANALYSIS"
+                title="Laboratorio"
+                subtitle="Recepción y Toma de Muestras"
+                icon={FileText}
+                styling={styles.ANALYSIS}
+              />
+              <ServiceCard 
+                type="RESULTS"
+                title="Resultados"
+                subtitle="Retiro de Estudios Finalizados"
+                icon={ClipboardList}
+                styling={styles.RESULTS}
+              />
+              <ServiceCard 
+                type="BUDGET"
+                title="Presupuestos"
+                subtitle="Consultas y Precios"
+                icon={Calculator}
+                styling={styles.BUDGET}
+              />
+            </div>
           </div>
+        ) : (
+          // --- TICKET GENERADO ---
+          <div className="w-full max-w-lg animate-fade-in flex flex-col items-center">
+            
+            <div className="w-full bg-surface border-2 border-border/50 rounded-[3rem] shadow-[0_20px_40px_rgb(0,0,0,0.08)] overflow-hidden">
+               <div className="p-14 flex flex-col items-center text-center">
+                  <div className="w-24 h-24 bg-success/10 rounded-[2rem] flex items-center justify-center mb-10 border border-success/20">
+                    <CheckCircle2 className="w-12 h-12 text-success" strokeWidth={2.5} />
+                  </div>
 
-          <h2 className="text-xl md:text-2xl font-medium text-[#e2e8f0] mb-14 tracking-wide animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
-            Seleccione el servicio que requiere
-          </h2>
+                  <p className="text-base font-extrabold text-text-muted uppercase tracking-widest mb-4">
+                    Su Número de Turno
+                  </p>
 
-          <div className="flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-10 animate-fade-in" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
-            <ServiceCard 
-              type="RESULTS"
-              title="Resultados"
-              subtitle="Retiro Rápido"
-              icon={CheckCircle2}
-              colorClass="text-[#6b9b37]"
-              gradientClass="from-[#4b7522] to-transparent"
-              ringClass="ring-[#6b9b37]"
-            />
-            <ServiceCard 
-              type="ANALYSIS"
-              title="Análisis"
-              subtitle="Atención Clínica"
-              icon={TicketIcon}
-              colorClass="text-[#93c5fd]"
-              gradientClass="from-[#4b8eff] to-transparent"
-              ringClass="ring-[#93c5fd]"
-            />
-            <ServiceCard 
-              type="BUDGET"
-              title="Informes"
-              subtitle="Presupuestos"
-              iconNode="₲"
-              colorClass="text-[#b7c8e1]"
-              gradientClass="from-[#8292aa] to-transparent"
-              ringClass="ring-[#b7c8e1]"
-            />
-          </div>
-        </div>
-      ) : (
-        // --- TICKET GENERADO ---
-        <div className="w-full max-w-xl animate-fade-in z-10 animate-float">
-          <div className="bg-[#1a3152] rounded-2xl shadow-[0_0_100px_-20px_rgba(173,198,255,0.15)] overflow-hidden relative border border-white/5 backdrop-blur-3xl">
-            {/* Ambient Ticket Glow */}
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                  <h2 className="text-[6rem] font-extrabold text-text tracking-tighter mb-10 tabular-nums leading-none">
+                    {ticket.number}
+                  </h2>
 
-            <div className="p-16 flex flex-col items-center text-center relative z-10">
-              <div className="w-20 h-20 bg-black/30 rounded-full flex items-center justify-center mb-8 border border-white/10 relative">
-                <div className="absolute inset-0 bg-[#6b9b37]/20 rounded-full blur-md" />
-                <CheckCircle2 className="w-10 h-10 text-[#6b9b37] relative z-10" />
-              </div>
+                  <div className="bg-surface-2 rounded-2xl py-4 px-8 w-full text-center border-2 border-border/60">
+                    <p className="text-text font-bold text-lg">
+                      {ticket.serviceType === 'RESULTS' ? 'Retiro de Resultados' : ticket.serviceType === 'ANALYSIS' ? 'Laboratorio Clínico' : 'Presupuestos e Informes'}
+                    </p>
+                  </div>
+               </div>
 
-              <h2 className="text-xl font-black text-[#94a3b8] uppercase tracking-[0.4em] mb-4">
-                Su Turno
-              </h2>
-
-              <div className="bg-black/40 rounded-2xl py-10 px-16 w-full border border-white/5 mb-8 shadow-inner relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#2563eb]/10 to-transparent opacity-50" />
-                <p className="relative z-10 text-8xl md:text-9xl font-black text-[#ffffff] leading-none tabular-nums tracking-tighter drop-shadow-xl">
-                  {ticket.number}
-                </p>
-              </div>
-
-              <p className="text-[#93c5fd] font-bold uppercase tracking-[0.3em] text-xs mb-10 bg-[#00285c]/40 px-6 py-2.5 rounded-full border border-[#2563eb]/30">
-                {ticket.serviceType === 'RESULTS' ? 'Retirar Resultados' : ticket.serviceType === 'ANALYSIS' ? 'Realizar Análisis' : 'Consultar Presupuesto'}
-              </p>
-
-              <div className="w-full flex justify-between items-center text-[#94a3b8] font-bold text-sm border-t border-white/10 pt-8 mt-2">
-                <span className="tracking-widest">{ticket.time.toLocaleDateString('es-PY')}</span>
-                <span className="tracking-widest">{ticket.time.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-
-              <div className="mt-12 text-[#ffffff]">
-                <p className="text-xl font-black uppercase tracking-widest mb-1">Retire el ticket impreso</p>
-                <p className="text-[#94a3b8] font-medium text-sm">Aguarde a ser llamado en pantalla</p>
-              </div>
+               {/* Footer of ticket preview */}
+               <div className="bg-surface-2 px-10 py-6 flex justify-between items-center text-base font-bold text-text-muted">
+                 <span>{ticket.time.toLocaleDateString('es-PY')}</span>
+                 <span>{ticket.time.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}</span>
+               </div>
             </div>
 
-            <div className="h-2 w-full bg-gradient-to-r from-[#3b82f6] via-[#6b9b37] to-[#3b82f6] animate-scan-line" style={{ animationDirection: 'alternate' }}></div>
+            <div className="mt-12 text-center animate-pulse flex flex-col items-center gap-3">
+              <Play className="w-10 h-10 text-primary rotate-90" strokeWidth={2.5} />
+              <p className="text-3xl font-extrabold text-text">Retire su ticket aquí abajo</p>
+              <p className="text-text-muted font-bold text-xl">Aguarde a ser llamado en la sala de espera.</p>
+            </div>
           </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes fade-in {
-          0% { opacity: 0; transform: translateY(20px) scale(0.98); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-      `}</style>
+        )}
+      </main>
     </div>
   )
 }

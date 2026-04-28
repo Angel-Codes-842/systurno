@@ -179,7 +179,7 @@ export default function TicketsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0f1c2e] flex flex-col font-sans overflow-x-hidden" style={{ minHeight: '100dvh' }}>
+    <div className="min-h-screen bg-bg flex flex-col font-sans overflow-x-hidden" style={{ minHeight: '100dvh' }}>
       <Navbar 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
@@ -201,9 +201,9 @@ export default function TicketsPage() {
             />
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 rounded-xl border border-[#1e293b] bg-[#131B2C]">
-                <Loader2 className="w-10 h-10 text-[#00b4d8] animate-spin mb-3" />
-                <p className="text-sm text-[#64748b]">Sincronizando sistema...</p>
+              <div className="flex flex-col items-center justify-center py-24 rounded-2xl border border-border bg-surface-2 shadow-sm">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mb-3" />
+                <p className="text-sm text-text-muted font-medium">Sincronizando sistema...</p>
               </div>
             ) : (
               <PanelLlamados 

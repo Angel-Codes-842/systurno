@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useWebSocket } from '../../contexts/WebSocketContext'
 import { API_URL, resolveMediaUrl } from '../../config/api'
+import { Monitor } from 'lucide-react'
 
 interface DisplayInfo {
   ticketNumber: string
@@ -19,7 +20,7 @@ interface Slider {
   order: number
 }
 
-// UTILIDAD DE SONIDO (Ding-Dong Sintetizado)
+// UTILIDAD DE SONIDO (Ding-Dong Sintetizado para ambiente clínico)
 const playChime = () => {
   const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
@@ -123,6 +124,7 @@ export default function SalaEsperaPage() {
         utterance.volume = 1
         
         const voices = window.speechSynthesis.getVoices()
+        // Prefiere voces femeninas limpias
         const sabinaVoice = voices.find(v => v.name.toLowerCase().includes('sabina'))
         const mexicanVoice = voices.find(v => v.lang === 'es-MX')
         const spanishVoice = voices.find(v => v.lang.startsWith('es'))
@@ -162,13 +164,13 @@ export default function SalaEsperaPage() {
 
       setRecentCalls(prev => {
         const updated = [info, ...prev.filter(p => p.ticketNumber !== info.ticketNumber)]
-        return updated.slice(0, 10)
+        return updated.slice(0, 10) // Mantener últimos 10
       })
 
       timeoutRef.current = setTimeout(() => {
         setIsAnimating(false)
         clearLastCalledTicket()
-      }, 7000)
+      }, 8000)
     }
   }, [lastCalledTicket, speakAnnouncement, clearLastCalledTicket])
 
@@ -177,161 +179,126 @@ export default function SalaEsperaPage() {
   }, [])
 
   const lastCalled = recentCalls[0] || null
-  const previousCalls = recentCalls.slice(1, 9)
+  const previousCalls = recentCalls.slice(1, 9) // Mostrar maximo 8 históricos en grid
 
   return (
-    <div className="h-screen w-full bg-[#0f1c2e] flex flex-col font-sans overflow-hidden select-none relative">
-      <div className="absolute top-0 right-0 w-[50vw] h-[50vw] bg-[#2563eb]/5 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[50vw] h-[50vw] bg-[#4b7522]/5 rounded-full blur-[150px] pointer-events-none" />
+    <div className="h-screen w-full bg-surface-2 flex flex-col font-sans overflow-hidden select-none">
 
-      {/* Header Profesional Aether Dark */}
-      <header className="bg-[#1a3152]/80 backdrop-blur-2xl px-12 py-8 flex justify-between items-center z-10 border-b border-white/5 shadow-2xl">
-        <div className="flex items-center gap-8">
-          <div className="w-20 h-20 bg-[#0f1c2e] rounded-2xl shadow-inner flex items-center justify-center p-3 border border-white/10">
-            <img src="/logo.jpg" alt="Biogenic" className="w-full h-full object-contain opacity-100" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-4xl font-black text-[#ffffff] tracking-widest leading-none uppercase drop-shadow-lg">
-              Biogenic
-            </h1>
-            <p className="text-[#6b9b37] text-sm font-black uppercase tracking-[0.4em] mt-2 drop-shadow-md">
-              Diagnóstico Laboratorial
-            </p>
+      {/* Header Corporativo Limpio */}
+      <header className="bg-surface px-12 py-6 flex justify-between items-center z-10 border-b border-border shadow-sm">
+        <div className="flex items-center gap-6">
+          <div className="w-48">
+            <img src="/logo.jpg" alt="Biogenic Laboratorio" className="w-full h-auto object-contain" />
           </div>
         </div>
         
         <div className="flex items-center gap-12">
-          <div className="text-right border-r border-white/10 pr-12">
-            <p className="text-[#94a3b8] font-black tracking-widest text-xs uppercase mb-2">
-              Hora
+          <div className="text-right border-r border-border pr-12">
+            <p className="text-text-muted font-bold tracking-widest text-xs uppercase mb-1">
+              Hora Central
             </p>
-            <p className="text-5xl font-black text-[#ffffff] tabular-nums tracking-widest leading-none drop-shadow-md">
-              {currentTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}
+            <p className="text-5xl font-extrabold text-primary tabular-nums tracking-tight leading-none">
+              {currentTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-[#94a3b8] font-black tracking-widest text-xs uppercase mb-2">
+            <p className="text-text-muted font-bold tracking-widest text-xs uppercase mb-1">
               Fecha
             </p>
-            <p className="text-2xl font-bold text-[#93c5fd] tracking-widest leading-none capitalize drop-shadow-sm">
-              {currentTime.toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'short' })}
+            <p className="text-2xl font-bold text-text tracking-wide leading-none capitalize">
+              {currentTime.toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
         </div>
       </header>
 
-      <main id="main-content" className="flex-1 flex overflow-hidden z-10">
+      <main className="flex-1 flex overflow-hidden z-10">
         
-        {/* Lado Izquierdo: Area de Turnos (65%) */}
-        <div className="w-[65%] flex flex-col p-12 gap-10 relative">
+        {/* Lado Izquierdo: Area de Turnos (70%) */}
+        <div className="w-[70%] flex flex-col p-10 gap-8 bg-surface-2">
           
-          {lastCalled ? (
-            <div className={`flex-1 flex flex-col justify-center items-center rounded-2xl p-12 transition-[border-color,box-shadow,transform,background-color] duration-700 ease-out border-2 ${
-              isAnimating 
-                ? 'bg-[#1a3152]/90 backdrop-blur-3xl border-[#6b9b37] shadow-[0_0_100px_rgba(83,225,111,0.2)] scale-[1.02]' 
-                : 'bg-[#1a3152]/60 backdrop-blur-xl border-white/5 scale-100'
-            }`}>
-              {isAnimating && (
-                 <div className="absolute top-0 w-full h-2 bg-gradient-to-r from-transparent via-[#6b9b37] to-transparent animate-scan-line pointer-events-none" />
-              )}
-              
-              <div className="text-center w-full animate-in fade-in zoom-in duration-700">
-                <p className={`text-4xl uppercase tracking-[0.5em] font-black mb-12 transition-colors duration-1000 ${
-                  isAnimating ? 'text-[#6b9b37] drop-shadow-[0_0_10px_rgba(83,225,111,0.8)]' : 'text-[#94a3b8]'
+          {/* Main Display Area */}
+          <div className={`flex-1 flex flex-col justify-center items-center rounded-3xl p-12 transition-all duration-500 ease-out border-2 ${
+            isAnimating 
+              ? 'bg-surface border-primary shadow-lg scale-[1.02]' 
+              : 'bg-surface border-border shadow-sm scale-100'
+          }`}>
+            
+            {lastCalled ? (
+              <div className="text-center w-full animate-fade-in flex flex-col items-center justify-center">
+                <p className={`text-3xl uppercase tracking-widest font-extrabold mb-8 transition-colors duration-500 ${
+                  isAnimating ? 'text-primary' : 'text-text-muted'
                 }`}>
-                  {isAnimating ? 'Turno Llamado' : 'Último Turno'}
+                  {isAnimating ? 'TURNO LLAMADO AHORA' : 'ÚLTIMO TURNO LLAMADO'}
                 </p>
                 
-                <div className={`relative rounded-2xl px-24 py-28 mb-12 flex justify-center items-center transition-all duration-700 overflow-hidden ${
+                <div className={`w-full max-w-4xl py-24 px-12 rounded-[3rem] mb-12 flex justify-center items-center transition-colors duration-500 ${
                   isAnimating 
-                    ? 'bg-[#0f1c2e] border border-[#6b9b37]/50 scale-105 shadow-2xl' 
-                    : 'bg-[#0f1c2e] border border-white/5 shadow-inner'
+                    ? 'bg-primary text-white shadow-xl' 
+                    : 'bg-surface-2 text-text border border-border shadow-inner'
                 }`}>
-                  {isAnimating && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#4b7522]/20 to-transparent pointer-events-none" />
-                  )}
-                  <p className={`text-[16rem] lg:text-[20rem] font-black leading-none tracking-tighter tabular-nums drop-shadow-2xl relative z-10 transition-colors duration-700 ${
-                    isAnimating ? 'text-[#ffffff]' : 'text-[#e2e8f0]'
-                  }`}>
+                  <p className="text-[18rem] font-bold leading-none tracking-tighter tabular-nums drop-shadow-sm">
                     {lastCalled.ticketNumber}
                   </p>
                 </div>
 
-                <div className={`px-20 py-10 inline-block rounded-2xl transition-all duration-700 ${
+                <div className={`px-16 py-6 inline-flex rounded-2xl border transition-colors duration-500 ${
                   isAnimating 
-                    ? 'bg-gradient-to-r from-[#4b7522] to-[#6b9b37] text-[#002107] scale-105 shadow-[0_0_40px_rgba(83,225,111,0.4)]' 
-                    : 'bg-[#0f1c2e] text-[#94a3b8] border border-white/5 shadow-inner'
+                    ? 'bg-success/10 border-success/30 text-success' 
+                    : 'bg-surface text-text-muted border-border'
                 }`}>
-                  <p className="text-5xl lg:text-7xl font-black flex items-center justify-center gap-10 uppercase tracking-widest">
-                    <span>
-                      <svg className="w-16 h-16 lg:w-20 lg:h-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                      </svg>
-                    </span>
+                  <p className="text-4xl font-extrabold flex items-center justify-center gap-6 uppercase tracking-wider">
                     Pase a Recepción
                   </p>
                 </div>
               </div>
-            </div>
-          ) : (
-            // Modo Reposo Profesional
-            <div className="flex-1 flex flex-col justify-center items-center rounded-2xl bg-[#1a3152]/60 backdrop-blur-xl border border-white/5 shadow-2xl relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-b from-[#93c5fd]/5 to-transparent opacity-50" />
-               <div className="z-10 text-center flex flex-col items-center animate-fade-in relative pt-10">
-                 <div className="mb-14 w-48 h-48 bg-[#0f1c2e] rounded-2xl shadow-inner flex items-center justify-center p-8 border border-white/10 relative">
-                   <div className="absolute inset-0 rounded-2xl shadow-[0_0_80px_rgba(0,91,193,0.2)]" />
-                   <img src="/logo.jpg" alt="Biogenic" className="w-full h-full object-contain relative z-10" />
-                 </div>
-
-                 <div className="text-7xl lg:text-9xl font-black text-[#ffffff] leading-none tracking-widest tabular-nums mb-8 drop-shadow-xl">
-                   {currentTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}
-                 </div>
-                 
-                 <div className="text-5xl lg:text-6xl text-[#93c5fd] font-bold mb-24 capitalize tracking-widest drop-shadow-md">
-                   {currentTime.toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'long' })}
-                 </div>
-                 
-                 <div className="inline-flex items-center gap-8 px-16 py-8 bg-[#0f1c2e]/80 border border-[#6b9b37]/20 rounded-xl shadow-[0_0_30px_rgba(83,225,111,0.1)]">
-                   <div className="w-5 h-5 rounded-full bg-[#6b9b37] shadow-[0_0_20px_rgba(83,225,111,0.8)] animate-bio-pulse"></div>
-                   <span className="text-3xl lg:text-4xl font-black text-[#6b9b37] tracking-[0.4em] uppercase">Sistema Activo</span>
-                 </div>
-               </div>
-            </div>
-          )}
+            ) : (
+              // Modo Reposo
+              <div className="flex-1 flex flex-col justify-center items-center animate-fade-in text-center">
+                 <Monitor className="w-32 h-32 text-border-2 mb-10" strokeWidth={1} />
+                 <h2 className="text-5xl font-extrabold text-text-muted tracking-tight mb-4">
+                   Sistema de Turnos Activo
+                 </h2>
+                 <p className="text-2xl font-medium text-text-muted">
+                   Aguarde su turno en la sala, será llamado en breve.
+                 </p>
+              </div>
+            )}
+          </div>
 
           {/* Historial Inferior Organizado */}
-          <div className="mt-auto pt-10">
-            <div className="flex items-center gap-8 mb-8">
-               <p className="text-[#94a3b8] text-xl font-black uppercase tracking-[0.4em]">Historial Reciente</p>
-               <div className="h-px bg-white/10 flex-1"></div>
+          <div className="h-[28%] bg-surface rounded-3xl border border-border p-8 shadow-sm flex flex-col">
+            <div className="flex items-center gap-6 mb-6">
+               <p className="text-text font-bold text-lg uppercase tracking-widest">Historial de Turnos</p>
+               <div className="h-px bg-border flex-1"></div>
             </div>
             
             {previousCalls.length > 0 ? (
-              <div className="grid grid-cols-4 gap-8">
+              <div className="flex-1 grid grid-cols-4 lg:grid-cols-8 gap-4 items-center">
                 {previousCalls.map((call, index) => (
                   <div
                     key={`${call.ticketNumber}-${index}`}
-                    className="bg-[#1a3152]/60 backdrop-blur-xl border border-white/5 rounded-xl p-8 flex flex-col items-center justify-center shadow-lg transition-all duration-300"
+                    className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col items-center justify-center shadow-sm"
                   >
-                    <span className="text-5xl lg:text-6xl font-black text-[#ffffff] tracking-tighter mb-3 tabular-nums drop-shadow-md">
+                    <span className="text-3xl font-bold text-text mb-1 tabular-nums">
                       {call.ticketNumber}
                     </span>
-                    <span className="text-[#94a3b8] font-black text-lg tracking-widest uppercase">
+                    <span className="text-text-muted font-semibold text-xs tracking-wider">
                       {call.calledAt.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-[#1a3152]/30 rounded-2xl border-2 border-dashed border-white/10 backdrop-blur-sm">
-                <p className="text-[#94a3b8] text-2xl font-black uppercase tracking-widest">Esperando pacientes</p>
+              <div className="flex-1 flex items-center justify-center bg-surface-2 rounded-2xl border border-dashed border-border">
+                <p className="text-text-muted text-lg font-bold uppercase tracking-widest">Sin turnos en el historial</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Lado Derecho: Contenido Multimedia (35%) */}
-        <div className="w-[35%] bg-black relative border-l border-white/10 overflow-hidden shadow-2xl z-20">
+        {/* Lado Derecho: Contenido Multimedia Institucional (30%) */}
+        <div className="w-[30%] bg-surface relative border-l border-border overflow-hidden z-20">
           {sliders.length > 0 ? (
             <div className="absolute inset-0">
               {sliders.map((slider, index) => (
@@ -341,17 +308,17 @@ export default function SalaEsperaPage() {
                     index === currentSlideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-surface-2">
                     {slider.media_type === 'IMAGE' && (slider.image_url || slider.image) ? (
                       <img
                         src={resolveMediaUrl(slider.image_url || slider.image)}
                         alt={slider.title}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     ) : slider.media_type === 'VIDEO' && (slider.video_url || slider.video) ? (
                       <video
                         src={resolveMediaUrl(slider.video_url || slider.video)}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                         autoPlay
                         muted
                         loop
@@ -361,25 +328,27 @@ export default function SalaEsperaPage() {
                   </div>
                 </div>
               ))}
-              <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0f1c2e] via-[#0f1c2e]/60 to-transparent z-20" />
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center bg-[#0f1c2e]/80 backdrop-blur-xl">
-               <div className="w-56 h-56 bg-[#1a3152] rounded-2xl flex items-center justify-center p-12 mb-10 border border-white/5 shadow-inner">
-                 <img src="/logo.jpg" alt="Logo" className="w-full h-full object-contain opacity-50" />
-               </div>
-               <p className="text-4xl font-black text-[#94a3b8] tracking-[0.5em] uppercase text-center opacity-50">Biogenic<br/>Media</p>
+            <div className="h-full flex flex-col items-center justify-center bg-surface-2 text-center p-12">
+               <img src="/logo.jpg" alt="Logo" className="w-48 h-auto opacity-30 grayscale mb-6" />
+               <p className="text-xl font-bold text-text-muted uppercase tracking-widest max-w-[200px]">Información Institucional</p>
             </div>
           )}
         </div>
       </main>
 
-      {/* Footer Minimalista Aether */}
-      <footer className="bg-[#1a3152]/90 backdrop-blur-2xl py-5 px-12 flex justify-end items-center z-30 border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+      {/* Corporate Minimal Footer */}
+      <footer className="bg-surface py-3 px-8 flex justify-between items-center z-30 border-t border-border">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-4 px-5 py-2 bg-[#0f1c2e] rounded-full border border-white/10 shadow-inner">
-            <span className={`w-3 h-3 rounded-full ${isConnected ? 'bg-[#6b9b37] shadow-[0_0_10px_rgba(83,225,111,0.8)] animate-pulse' : 'bg-[#ffb4ab]'}`}></span>
-            <span className="text-[#e2e8f0] text-[10px] font-black tracking-[0.3em] uppercase">{isConnected ? 'En Línea' : 'Desconectado'}</span>
+          <p className="text-text-muted text-xs font-semibold tracking-widest uppercase">
+            Biogenic - Todos los derechos reservados
+          </p>
+        </div>
+        <div className="flex gap-4">
+          <div className="flex items-center gap-3 bg-surface-2 px-4 py-1.5 rounded-full border border-border">
+            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-success' : 'bg-danger'}`}></span>
+            <span className="text-text text-xs font-bold uppercase tracking-wider">{isConnected ? 'Conectado al Servidor' : 'Desconectado'}</span>
           </div>
         </div>
       </footer>

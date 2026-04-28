@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { API_URL, resolveMediaUrl } from '../config/api'
-import { Upload, Image as ImageIcon, Video, Trash2, PauseCircle, PlayCircle, Loader2, Tv, Check } from 'lucide-react'
+import { Upload, Image as ImageIcon, Video, Trash2, PauseCircle, PlayCircle, Loader2, Tv, Check, Clock } from 'lucide-react'
 import { Button } from './ui/Button'
 
 interface Slider {
@@ -147,157 +147,176 @@ export default function SliderManager() {
     <div className="space-y-6">
 
       {/* ── Subir Nuevo Medio ── */}
-      <section aria-labelledby="upload-heading" className="rounded-xl border border-[#1e293b] bg-[#131B2C] overflow-hidden">
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[#1e293b] bg-[#0f1c2e]/40">
-          <div className="p-1.5 rounded-lg bg-[#00b4d8]/20" aria-hidden="true">
-            <Upload className="w-4 h-4 text-[#00b4d8]" aria-hidden="true" />
+      <section aria-labelledby="upload-heading" className="rounded-2xl border border-border bg-surface overflow-hidden shadow-sm">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface-2">
+          <div className="p-1.5 rounded-lg bg-primary/20" aria-hidden="true">
+            <Upload className="w-5 h-5 text-primary" aria-hidden="true" />
           </div>
           <div>
-            <h3 id="upload-heading" className="font-semibold text-white text-sm">Subir Nuevo Medio</h3>
-            <p className="text-xs text-[#64748b]">Aparecerá en los televisores de la sala de espera</p>
+            <h3 id="upload-heading" className="font-bold text-text text-sm">Subir Nuevo Medio</h3>
+            <p className="text-xs text-text-muted font-medium mt-0.5">Aparecerá en los televisores de la sala de espera</p>
           </div>
         </div>
 
         <div className="p-6">
           <form onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-[240px_1fr] gap-6 items-start">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
 
-              {/* Zona upload */}
-              <div>
-                <input
-                  ref={fileInputRef}
-                  id="file-upload"
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  aria-label="Seleccionar archivo de imagen o video"
-                />
-                {!previewUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={handleDrop}
-                    aria-label="Cargar archivo de imagen o video"
-                    className={`w-full flex flex-col items-center justify-center h-44 rounded-xl border-2 border-dashed cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] ${
-                      isDragging ? 'border-[#00b4d8] bg-[#00b4d8]/10' : 'border-[#1e293b] hover:border-[#00b4d8]/50 hover:bg-[#0f1c2e]/50'
-                    }`}
-                  >
-                    <div className="p-3 rounded-full bg-[#00b4d8]/10 mb-3">
-                      <Upload className="w-6 h-6 text-[#00b4d8]" aria-hidden="true" />
-                    </div>
-                    <p className="text-sm font-medium text-white">Cargar Archivo</p>
-                    <p className="text-xs text-[#64748b] mt-1">Cualquier imagen o video</p>
-                  </button>
-                ) : (
-                  <div className="relative h-44 rounded-xl overflow-hidden bg-black border border-[#1e293b]">
-                    {mediaType === 'IMAGE'
-                      ? <img src={previewUrl} alt="Vista previa del archivo seleccionado" width={240} height={176} className="w-full h-full object-cover" />
-                      : <video src={previewUrl} aria-label="Vista previa del video seleccionado" className="w-full h-full object-cover" />
-                    }
+              {/* Columna Izquierda: Zona upload / Vista Previa = TAMAÑO ESTRICTO */}
+              <div className="w-full max-w-[320px] shrink-0 mx-auto lg:mx-0 space-y-2">
+                <label className="text-[11px] font-extrabold text-text-muted uppercase tracking-widest pl-1 lg:pl-0 text-center lg:text-left block">
+                  Caja Multimedia
+                </label>
+                <div className="relative w-[320px] aspect-video rounded-xl border-border bg-surface-2 overflow-hidden flex flex-col items-center justify-center border border-dashed shadow-sm">
+                  <input
+                    ref={fileInputRef}
+                    id="file-upload"
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    aria-label="Seleccionar archivo"
+                  />
+                  {!selectedFile ? (
                     <button
                       type="button"
-                      aria-label="Quitar archivo seleccionado"
-                      onClick={() => { setSelectedFile(null); setPreviewUrl(null) }}
-                      className="absolute top-2 right-2 bg-red-500/80 text-white p-1.5 rounded-lg hover:bg-red-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      onClick={() => fileInputRef.current?.click()}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={handleDrop}
+                      className={`absolute inset-0 flex flex-col items-center justify-center w-full h-full cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isDragging ? 'bg-primary/5 border-2 border-primary' : 'hover:bg-surface border-2 border-transparent hover:border-primary/30'
+                        }`}
                     >
-                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                      <div className="p-2.5 rounded-full bg-surface border border-border shadow-sm mb-3">
+                        <Upload className="w-5 h-5 text-primary/80" aria-hidden="true" />
+                      </div>
+                      <p className="text-sm font-bold text-text">Subir Archivo</p>
+                      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-widest font-bold">JPG, PNG, MP4</p>
                     </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Campos */}
-              <div className="flex flex-col gap-4">
-                {/* Título */}
-                <div className="space-y-1.5">
-                  <label htmlFor="slider-title" className="text-xs font-medium text-[#64748b] uppercase tracking-wider">
-                    Título Referencia
-                  </label>
-                  <input
-                    id="slider-title"
-                    name="title"
-                    type="text"
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ej: Recomendaciones Vacunación…"
-                    required
-                    className="w-full px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white placeholder-[#475569] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] focus-visible:border-[#00b4d8]/50 text-sm transition-colors"
-                  />
-                </div>
-
-                {/* Formato + Duración */}
-                <div className="flex items-end gap-4">
-                  <div className="flex-1 space-y-1.5">
-                    <label htmlFor="slider-format" className="text-xs font-medium text-[#64748b] uppercase tracking-wider">
-                      Formato Visual
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="slider-format"
-                        name="media_type"
-                        value={mediaType}
-                        onChange={(e) => setMediaType(e.target.value as 'IMAGE' | 'VIDEO')}
-                        className="w-full px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] text-sm appearance-none cursor-pointer pr-8 transition-colors"
+                  ) : (
+                    <div className="absolute inset-0 w-full h-full group bg-slate-900 border-none">
+                      {mediaType === 'IMAGE'
+                        ? <img src={previewUrl!} alt="Preview" className="w-full h-full object-cover" />
+                        : <video src={previewUrl!} className="w-full h-full object-cover" controls={false} />
+                      }
+                      <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-white shadow p-[1px] border border-white/10">
+                        {mediaType === 'IMAGE' ? <ImageIcon className="w-3 h-3" /> : <Video className="w-3 h-3" />}
+                        <span className="text-[9px] font-bold tracking-wider uppercase">
+                          {mediaType === 'IMAGE' ? 'Imagen' : 'Video'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedFile(null); setPreviewUrl(null); setTitle('') }}
+                        className="absolute top-2 right-2 p-1.5 rounded bg-black/60 text-white/80 hover:text-white hover:bg-danger/90 border border-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
                       >
-                        <option value="IMAGE">Imagen (Fija)</option>
-                        <option value="VIDEO">Video (Reproducible)</option>
-                      </select>
-                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#64748b]" aria-hidden="true">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {mediaType === 'IMAGE' && (
-                    <div className="space-y-1.5">
-                      <label htmlFor="slider-duration" className="text-xs font-medium text-[#64748b] uppercase tracking-wider">
-                        Duración (seg)
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          id="slider-duration"
-                          name="duration"
-                          type="number"
-                          inputMode="numeric"
-                          min={1}
-                          max={3600}
-                          value={duration}
-                          onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 1))}
-                          className="w-24 px-3 py-2.5 bg-[#0f1c2e] border border-[#1e293b] rounded-lg text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] text-sm font-mono text-center transition-colors"
-                        />
-                        <span className="text-sm text-[#64748b]" aria-hidden="true">seg</span>
-                      </div>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   )}
                 </div>
+              </div>
 
-                {/* Botones */}
-                <div className="flex items-center justify-end gap-3 pt-1">
+              {/* Columna Derecha: Parámetros siempre visibles */}
+              <div className="flex-1 flex flex-col gap-6 w-full max-w-2xl mx-auto lg:mx-0 pt-2 lg:pt-0">
+
+                {/* Inputs y Controles en columna limpia */}
+                <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 w-full items-start">
+
+                  {/* Título */}
+                  <div className="space-y-2 flex-1 w-full shrink-[2]">
+                    <label htmlFor="slider-title" className="text-[11px] font-extrabold text-text-muted uppercase tracking-widest pl-1">
+                      Título Referencia
+                    </label>
+                    <input
+                      id="slider-title"
+                      name="title"
+                      type="text"
+                      autoComplete="off"
+                      spellCheck={false}
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Ej: Promos..."
+                      required
+                      className="w-full px-5 py-3 hover:bg-surface-2 bg-surface border border-border rounded-xl text-text placeholder-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-[15px] font-medium transition-colors shadow-sm"
+                    />
+                  </div>
+
+                  {/* Duración */}
+                  <div className="w-full sm:w-auto xl:w-auto shrink-0 flex-1">
+                    {mediaType === 'IMAGE' ? (
+                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                        <label className="text-[11px] font-extrabold text-text-muted uppercase tracking-widest flex items-center gap-1.5 pl-1">
+                          <Clock className="w-4 h-4" /> Tiempo visible
+                        </label>
+                        <div className="flex flex-wrap items-center gap-3">
+
+                          {/* Segmented Control Macizo */}
+                          <div className="flex p-1.5 rounded-2xl bg-surface-2 border border-border shadow-inner">
+                            {[5, 10, 15, 30].map(secs => (
+                              <button
+                                key={secs}
+                                type="button"
+                                onClick={() => setDuration(secs)}
+                                className={`px-4 py-2 rounded-xl text-sm font-extrabold transition-all duration-200 ${duration === secs
+                                    ? 'bg-surface text-primary border border-border shadow-sm scale-100 ring-1 ring-primary/20'
+                                    : 'bg-transparent border border-transparent text-text-muted hover:text-text hover:bg-surface/50 scale-95'
+                                  }`}
+                              >
+                                {secs}s
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Campo Manual */}
+                          <div className="flex items-center px-4 py-2 bg-surface border border-border rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary transition-all max-w-[120px]">
+                            <input
+                              type="number"
+                              min={1}
+                              max={3600}
+                              value={duration}
+                              onChange={(e) => setDuration(Math.max(1, parseInt(e.target.value) || 1))}
+                              className="w-full bg-transparent text-text focus-visible:outline-none text-[15px] font-black font-mono text-center"
+                            />
+                            <span className="text-[11px] font-bold text-text-muted uppercase ml-1">seg</span>
+                          </div>
+
+                        </div>
+                      </div>
+                    ) : (
+                      // Placeholder visual para vídeo
+                      <div className="space-y-2 opacity-50 select-none">
+                        <label className="text-[11px] font-extrabold text-transparent uppercase tracking-widest pl-1">.</label>
+                        <div className="flex items-center gap-3 h-[52px] px-5 rounded-2xl border-2 border-dashed border-border bg-surface-2 w-full max-w-[240px]">
+                          <Video className="w-5 h-5 text-text-muted" />
+                          <span className="text-sm font-bold text-text-muted whitespace-nowrap">Duración Auto</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 mt-4 pt-5 border-t border-border">
                   <Button
                     type="button"
                     variant="secondary"
                     size="md"
                     onClick={resetForm}
                     disabled={!selectedFile && !title}
+                    className="font-bold text-sm"
                   >
-                    Limpiar Todo
+                    Reset
                   </Button>
                   <Button
                     type="submit"
                     variant="primary"
                     size="md"
-                    disabled={isUploading || !selectedFile || !title}
+                    disabled={isUploading || !title.trim() || !selectedFile}
                     aria-busy={isUploading}
+                    className="font-bold text-sm shadow-sm"
                   >
                     {isUploading
-                      ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Procesando…</>
+                      ? <><Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> Subiendo…</>
                       : <><Check className="w-4 h-4" aria-hidden="true" /> Publicar en TV</>
                     }
                   </Button>
@@ -309,15 +328,15 @@ export default function SliderManager() {
       </section>
 
       {/* ── Modo TV Live ── */}
-      <section aria-labelledby="tv-heading" className="rounded-xl border border-[#1e293b] bg-[#131B2C] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e293b] bg-[#0f1c2e]/40">
+      <section aria-labelledby="tv-heading" className="rounded-2xl border border-border bg-surface overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-surface-2">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-[#0ea5e9]/20" aria-hidden="true">
-              <Tv className="w-4 h-4 text-[#0ea5e9]" aria-hidden="true" />
+            <div className="p-1.5 rounded-lg bg-primary/20" aria-hidden="true">
+              <Tv className="w-5 h-5 text-primary" aria-hidden="true" />
             </div>
-            <h3 id="tv-heading" className="font-semibold text-white text-sm">Modo TV Live</h3>
+            <h3 id="tv-heading" className="font-bold text-text text-sm">Modo TV Live</h3>
           </div>
-          <span className="text-xs font-medium text-[#94a3b8] bg-[#1e293b] px-2.5 py-1 rounded-full" aria-live="polite">
+          <span className="text-xs font-bold text-text-muted bg-surface border border-border px-3 py-1.5 rounded-full" aria-live="polite">
             {sliders.length} elementos
           </span>
         </div>
@@ -325,75 +344,72 @@ export default function SliderManager() {
         <div className="p-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16" role="status" aria-label="Cargando sliders">
-              <Loader2 className="w-8 h-8 text-[#00b4d8] animate-spin mb-3" aria-hidden="true" />
-              <p className="text-sm text-[#64748b]">Sincronizando con televisores…</p>
+              <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" aria-hidden="true" />
+              <p className="text-sm font-medium text-text-muted">Sincronizando con televisores…</p>
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-10 text-red-400 gap-3" role="alert">
-              <p className="text-sm font-medium">{error}</p>
+            <div className="flex flex-col items-center justify-center py-10 text-danger gap-3" role="alert">
+              <p className="text-sm font-bold">{error}</p>
               <button
                 onClick={loadSliders}
-                className="px-4 py-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                className="px-4 py-2 rounded-lg border border-danger/30 text-danger hover:bg-danger/10 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
               >
                 Reintentar
               </button>
             </div>
           ) : sliders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="p-4 rounded-full bg-[#1e293b]/50 mb-4" aria-hidden="true">
-                <ImageIcon className="w-10 h-10 text-[#64748b]/30" aria-hidden="true" />
+            <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border rounded-xl">
+              <div className="p-4 rounded-full bg-surface-2 mb-4 border border-border" aria-hidden="true">
+                <ImageIcon className="w-10 h-10 text-text-muted opacity-50" aria-hidden="true" />
               </div>
-              <h4 className="text-base font-semibold text-white mb-1">No hay contenido</h4>
-              <p className="text-sm text-[#64748b] max-w-xs">
-                Cargue archivos multimedia para alimentar las pantallas de la sala de espera.
+              <h4 className="text-lg font-bold text-text mb-1">No hay contenido</h4>
+              <p className="text-sm font-medium text-text-muted max-w-sm mx-auto">
+                Cargue archivos multimedia aquí para alimentar y decorar las pantallas de la sala de espera.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {sliders.map((slider) => (
                 <div
                   key={slider.id}
-                  className={`group flex flex-col rounded-xl border overflow-hidden transition-colors ${
-                    slider.is_active ? 'border-[#1e293b] hover:border-[#00b4d8]/30' : 'border-[#1e293b] opacity-60'
-                  } bg-[#0f1c2e]`}
+                  className={`group flex flex-col rounded-xl border overflow-hidden transition-all shadow-sm ${slider.is_active ? 'border-border hover:border-primary/50' : 'border-border opacity-70 grayscale-[50%]'
+                    } bg-surface`}
                 >
-                  <div className="relative w-full aspect-video bg-[#1e293b]">
+                  <div className="relative w-full aspect-video bg-surface-2 border-b border-border">
                     {slider.media_type === 'IMAGE'
                       ? <img src={getMediaUrl(slider)} alt={slider.title} width={320} height={180} className="w-full h-full object-cover" loading="lazy" />
                       : <video src={getMediaUrl(slider)} aria-label={slider.title} className="w-full h-full object-cover" muted />
                     }
                     <div className="absolute top-2 right-2" aria-hidden="true">
-                      <span className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-white ${
-                        slider.is_active ? 'bg-[#22c55e]/80' : 'bg-[#334155]/80'
-                      }`}>
+                      <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded shadow-sm text-[10px] font-bold text-white ${slider.is_active ? 'bg-success' : 'bg-text-muted'
+                        }`}>
                         <span className={`w-1.5 h-1.5 rounded-full bg-white ${slider.is_active ? 'animate-pulse' : ''}`} />
                         {slider.is_active ? 'En TV' : 'Apagado'}
                       </span>
                     </div>
                     <div className="absolute bottom-2 left-2" aria-hidden="true">
-                      <span className="flex items-center gap-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="flex items-center gap-1.5 bg-text/80 backdrop-blur-sm text-white px-2 py-0.5 rounded shadow-sm text-[10px] font-medium">
                         {slider.media_type === 'IMAGE' ? <ImageIcon className="w-3 h-3" aria-hidden="true" /> : <Video className="w-3 h-3" aria-hidden="true" />}
                         {slider.duration}s
                       </span>
                     </div>
                   </div>
-                  <div className="p-3 flex flex-col gap-2">
+                  <div className="p-4 flex flex-col gap-3">
                     <div>
-                      <p className="font-medium text-white text-sm truncate">{slider.title}</p>
-                      <p className="text-[10px] text-[#64748b]">
+                      <p className="font-bold text-text text-sm truncate">{slider.title}</p>
+                      <p className="text-[10px] font-medium text-text-muted mt-0.5">
                         <time dateTime={slider.created_at}>{new Date(slider.created_at).toLocaleDateString()}</time>
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-2 gap-2 mt-1">
                       <button
                         onClick={() => handleToggleActive(slider)}
                         aria-label={slider.is_active ? `Apagar ${slider.title}` : `Activar ${slider.title}`}
                         aria-pressed={slider.is_active}
-                        className={`flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] ${
-                          slider.is_active
-                            ? 'border-[#1e293b] text-[#94a3b8] hover:bg-[#1e293b]'
-                            : 'border-[#22c55e]/30 text-[#22c55e] bg-[#22c55e]/10 hover:bg-[#22c55e]/20'
-                        }`}
+                        className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${slider.is_active
+                            ? 'border-border text-text-muted hover:bg-surface-2 hover:text-text'
+                            : 'border-success/30 text-success bg-success/10 hover:bg-success/20'
+                          }`}
                       >
                         {slider.is_active
                           ? <><PauseCircle className="w-3.5 h-3.5" aria-hidden="true" /> Apagar</>
@@ -403,7 +419,7 @@ export default function SliderManager() {
                       <button
                         onClick={() => setDeleteModal({ show: true, slider })}
                         aria-label={`Borrar ${slider.title}`}
-                        className="flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-medium border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                        className="flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold border border-danger/30 text-danger hover:bg-danger/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
                       >
                         <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Borrar
                       </button>
@@ -422,28 +438,28 @@ export default function SliderManager() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="delete-modal-title"
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-text/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onKeyDown={(e) => e.key === 'Escape' && setDeleteModal({ show: false, slider: null })}
         >
-          <div className="bg-[#131B2C] border border-[#1e293b] rounded-2xl shadow-2xl max-w-sm w-full p-7 text-center">
-            <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4" aria-hidden="true">
-              <Trash2 className="w-6 h-6" aria-hidden="true" />
+          <div className="bg-surface border border-border rounded-2xl shadow-xl max-w-sm w-full p-8 text-center animate-fade-in">
+            <div className="w-14 h-14 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-5" aria-hidden="true">
+              <Trash2 className="w-7 h-7" aria-hidden="true" />
             </div>
-            <h3 id="delete-modal-title" className="text-base font-semibold text-white mb-2">¿Eliminar Contenido?</h3>
-            <p className="text-sm text-[#64748b] mb-6">
-              Se borrará <span className="font-semibold text-white">"{deleteModal.slider.title}"</span> permanentemente.
+            <h3 id="delete-modal-title" className="text-lg font-bold text-text mb-2">¿Eliminar Contenido?</h3>
+            <p className="text-sm font-medium text-text-muted mb-8 leading-relaxed">
+              Se borrará <span className="font-bold text-text">"{deleteModal.slider.title}"</span> permanentemente del sistema de pantallas.
             </p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={handleDelete}
-                className="w-full py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                className="w-full py-3 rounded-lg bg-danger hover:bg-red-600 text-white text-sm font-bold shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
               >
                 Borrar Definitivamente
               </button>
               <button
                 ref={modalCancelRef}
                 onClick={() => setDeleteModal({ show: false, slider: null })}
-                className="w-full py-2.5 rounded-lg border border-[#1e293b] text-[#94a3b8] hover:bg-[#1e293b] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8]"
+                className="w-full py-3 rounded-lg border border-border text-text hover:bg-surface-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 Cancelar
               </button>
