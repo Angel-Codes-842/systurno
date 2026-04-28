@@ -26,7 +26,7 @@ export const StatsResumen: React.FC<StatsResumenProps> = ({ total, waiting, call
             className={`flex items-center gap-4 p-4 rounded-xl border ${s.border} ${s.bg} transition-all hover:scale-[1.02]`}
           >
             <div className={`p-3 rounded-lg ${s.bg}`}>
-              <s.Icon className={`w-5 h-5 ${s.color}`} />
+              <s.Icon className={`w-5 h-5 ${s.color}`} aria-hidden="true" />
             </div>
             <div>
               <p className="text-xs font-medium text-[#64748b] uppercase tracking-wide">{s.label}</p>

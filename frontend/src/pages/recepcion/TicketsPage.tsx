@@ -189,7 +189,7 @@ export default function TicketsPage() {
         loadTickets={loadTickets}
       />
 
-      <main className="flex-1 p-6 w-full">
+      <main id="main-content" className="flex-1 p-6 w-full">
         {activeSection === 'turnos' ? (
           <div className="max-w-[1400px] mx-auto space-y-6">
             

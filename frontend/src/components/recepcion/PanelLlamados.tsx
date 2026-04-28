@@ -49,7 +49,7 @@ export const PanelLlamados: React.FC<PanelLlamadosProps> = ({
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1e293b] bg-[#0f1c2e]/40">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-[#d97706]/20">
-                <Clock className="w-4 h-4 text-[#d97706]" />
+                <Clock className="w-4 h-4 text-[#d97706]" aria-hidden="true" />
               </div>
               <h3 className="font-semibold text-white text-sm">Fila de Espera</h3>
             </div>
@@ -72,7 +72,7 @@ export const PanelLlamados: React.FC<PanelLlamadosProps> = ({
                 return (
                   <div
                     key={ticket.id}
-                    className={`group flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 ${
+                    className={`group flex items-center gap-3 p-3 rounded-xl border transition-colors ${
                       isNext
                         ? 'bg-[#00b4d8]/10 border-[#00b4d8]/30 ring-1 ring-[#00b4d8]/20'
                         : 'bg-[#1e293b]/40 border-[#1e293b] hover:bg-[#1e293b]/70 hover:border-[#00b4d8]/20'
@@ -123,7 +123,7 @@ export const PanelLlamados: React.FC<PanelLlamadosProps> = ({
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1e293b] bg-[#0f1c2e]/40">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-lg bg-[#0ea5e9]/20">
-                <Volume2 className="w-4 h-4 text-[#0ea5e9]" />
+                <Volume2 className="w-4 h-4 text-[#0ea5e9]" aria-hidden="true" />
               </div>
               <h3 className="font-semibold text-white text-sm">Atención Activa</h3>
             </div>

@@ -10,7 +10,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = '', variant = 'primary', size = 'md', children, ...props }, ref) => {
 
     const base =
-      'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0'
+      'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1c2e]'
 
     const variants: Record<string, string> = {
       primary:   'bg-[#00b4d8] text-[#0f1c2e] hover:bg-[#0ea5c9] shadow-lg shadow-[#00b4d8]/20',

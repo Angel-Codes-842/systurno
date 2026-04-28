@@ -24,7 +24,7 @@ export const TurnosCompletados: React.FC<TurnosCompletadosProps> = ({ attendedTi
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e293b] bg-[#0f1c2e]/60">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-[#22c55e]/20">
-            <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
+            <CheckCircle2 className="w-4 h-4 text-[#22c55e]" aria-hidden="true" />
           </div>
           <div>
             <h3 className="font-black text-white uppercase tracking-widest text-sm">Historial de Atención</h3>
@@ -49,7 +49,7 @@ export const TurnosCompletados: React.FC<TurnosCompletadosProps> = ({ attendedTi
               return (
                 <div
                   key={ticket.id}
-                  className={`flex flex-col items-center justify-center px-4 py-3 rounded-lg border transition-all hover:scale-105 ${badgeClasses[svcKey] ?? badgeClasses.BUDGET}`}
+                  className={`flex flex-col items-center justify-center px-4 py-3 rounded-lg border transition-colors hover:scale-105 ${badgeClasses[svcKey] ?? badgeClasses.BUDGET}`}
                 >
                   <span className={`text-lg font-black ${numberColor[svcKey] ?? 'text-white'}`}>
                     {ticket.ticket_number}

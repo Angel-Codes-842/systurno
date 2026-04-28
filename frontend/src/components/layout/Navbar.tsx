@@ -39,9 +39,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Izquierda: logo + tabs */}
       <div className="flex items-center gap-6">
         {/* Logo */}
-        <div
-          className="flex items-center gap-3 cursor-pointer"
+        <button
+          type="button"
+          className="flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8] rounded-lg"
           onClick={() => window.location.reload()}
+          aria-label="Recargar página"
         >
           <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0">
             <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
@@ -50,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <p className="text-sm font-bold text-white tracking-wide leading-none">BIOGENIC</p>
             <p className="text-[10px] text-[#00b4d8] font-semibold tracking-widest">DASHBOARD</p>
           </div>
-        </div>
+        </button>
 
         {/* Tabs */}
         <nav className="flex items-center gap-1 p-1 rounded-xl bg-[#131B2C] border border-[#1e293b]">
@@ -76,16 +78,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-5">
         <button
           onClick={loadTickets}
-          className="p-2 rounded-lg hover:bg-[#1e293b] transition-colors"
-          title="Sincronizar"
+          className="p-2 rounded-lg hover:bg-[#1e293b] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00b4d8]"
+          aria-label="Sincronizar datos"
         >
-          <Monitor className="w-5 h-5 text-[#94a3b8]" />
+          <Monitor className="w-5 h-5 text-[#94a3b8]" aria-hidden="true" />
         </button>
 
         <div className="flex items-center gap-4">
           <div className="text-right">
             <div className="flex items-center gap-1.5 text-xs text-[#94a3b8]">
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{dayName} {dayNumber}</span>
             </div>
             <p className="text-xl font-semibold font-mono tracking-wider text-white leading-tight">

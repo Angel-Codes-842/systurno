@@ -220,14 +220,13 @@ export default function SalaEsperaPage() {
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex overflow-hidden z-10">
+      <main id="main-content" className="flex-1 flex overflow-hidden z-10">
         
         {/* Lado Izquierdo: Area de Turnos (65%) */}
         <div className="w-[65%] flex flex-col p-12 gap-10 relative">
           
           {lastCalled ? (
-            <div className={`flex-1 flex flex-col justify-center items-center rounded-2xl p-12 transition-all duration-700 ease-out border-2 ${
+            <div className={`flex-1 flex flex-col justify-center items-center rounded-2xl p-12 transition-[border-color,box-shadow,transform,background-color] duration-700 ease-out border-2 ${
               isAnimating 
                 ? 'bg-[#1a3152]/90 backdrop-blur-3xl border-[#6b9b37] shadow-[0_0_100px_rgba(83,225,111,0.2)] scale-[1.02]' 
                 : 'bg-[#1a3152]/60 backdrop-blur-xl border-white/5 scale-100'

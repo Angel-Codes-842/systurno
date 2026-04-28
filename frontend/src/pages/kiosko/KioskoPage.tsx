@@ -150,7 +150,7 @@ export default function KioskoPage() {
       disabled={isGenerating}
       className={`relative flex flex-col items-center justify-center w-full max-w-[400px] h-[450px] 
                  bg-[#1a3152]/80 backdrop-blur-xl border-2 ${ringClass} rounded-3xl p-10 
-                 active:bg-[#24436e] active:scale-[0.96] transition-all duration-300 ease-out shadow-[0_0_40px_rgba(30,58,95,0.3)] disabled:opacity-50 overflow-hidden touch-manipulation`}
+                 active:bg-[#24436e] active:scale-[0.96] transition-[background-color,transform,box-shadow] duration-300 ease-out shadow-[0_0_40px_rgba(30,58,95,0.3)] disabled:opacity-50 overflow-hidden touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50`}
     >
       <div className={`absolute inset-0 opacity-30 bg-gradient-to-br ${gradientClass} mix-blend-overlay`} />
       
@@ -177,7 +177,7 @@ export default function KioskoPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#0f1c2e] flex items-center justify-center px-8 md:px-16 py-8 font-sans overflow-hidden relative">
+    <div className="min-h-screen bg-[#0f1c2e] flex items-center justify-center px-8 md:px-16 py-8 font-sans overflow-hidden relative" id="main-content">
       {/* Background Ambient Glow */}
       <div className="absolute top-1/4 left-1/4 w-[50vw] h-[50vw] bg-[#2563eb]/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[40vw] h-[40vw] bg-[#4b7522]/10 rounded-full blur-[100px] pointer-events-none" />
