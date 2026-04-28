@@ -90,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
               <span>{dayName} {dayNumber}</span>
             </div>
-            <p className="text-xl font-semibold font-mono tracking-wider text-white leading-tight">
+            <p className="text-xl font-semibold font-mono tracking-wider text-white leading-tight tabular-nums">
               {timeStr}
             </p>
           </div>

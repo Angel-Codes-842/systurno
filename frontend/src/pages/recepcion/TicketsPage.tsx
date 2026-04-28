@@ -179,7 +179,7 @@ export default function TicketsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#0f1c2e] flex flex-col font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0f1c2e] flex flex-col font-sans overflow-x-hidden" style={{ minHeight: '100dvh' }}>
       <Navbar 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
