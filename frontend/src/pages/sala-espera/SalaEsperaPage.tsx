@@ -20,33 +20,92 @@ interface Slider {
   order: number
 }
 
-// UTILIDAD DE SONIDO (Ding-Dong Sintetizado para ambiente clínico)
-const playChime = () => {
-  const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
-  const ctx = new AudioContext();
-  
-  const playNote = (freq: number, startTime: number, duration: number) => {
-    const osc = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
-    gainNode.gain.setValueAtTime(0, startTime);
-    gainNode.gain.linearRampToValueAtTime(0.5, startTime + 0.05); // Attack
-    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // Decay/Release
-    
-    osc.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-  };
+// --- SISTEMA DE SONIDO ADAPTATIVO PARA TV ---
 
-  playNote(659.25, ctx.currentTime, 1.0);
-  playNote(523.25, ctx.currentTime + 0.4, 1.5);
-};
+// AudioContext compartido y reutilizable (requerido por políticas de autoplay en Android TV)
+let sharedAudioContext: AudioContext | null = null
+
+const getAudioContext = (): AudioContext | null => {
+  try {
+    if (!sharedAudioContext) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const Ctx = window.AudioContext || (window as any).webkitAudioContext
+      if (!Ctx) return null
+      sharedAudioContext = new Ctx()
+    }
+    if (sharedAudioContext.state === 'suspended') {
+      sharedAudioContext.resume().catch(() => {})
+    }
+    return sharedAudioContext
+  } catch {
+    return null
+  }
+}
+
+const playChime = () => {
+  const ctx = getAudioContext()
+  if (!ctx) return
+
+  try {
+    const playNote = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, ctx.currentTime)
+      gainNode.gain.setValueAtTime(0, startTime)
+      gainNode.gain.linearRampToValueAtTime(0.5, startTime + 0.05)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration)
+      osc.connect(gainNode)
+      gainNode.connect(ctx.destination)
+      osc.start(startTime)
+      osc.stop(startTime + duration)
+    }
+    playNote(659.25, ctx.currentTime, 1.0)
+    playNote(523.25, ctx.currentTime + 0.4, 1.5)
+  } catch (e) {
+    console.warn('Error reproduciendo tono:', e)
+  }
+}
+
+// Componente de video con manejo de errores para TV
+function VideoPlayer({ src }: { src: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el) return
+
+    const tryPlay = () => {
+      el.play().catch(() => {
+        // Autoplay bloqueado en TV - intentar de nuevo con muted
+        el.muted = true
+        el.play().catch(() => {
+          // Algunas TV bloquean todo autoplay
+        })
+      })
+    }
+
+    el.addEventListener('loadeddata', tryPlay, { once: true })
+    // Si el video ya está cargado, intentar reproducir
+    if (el.readyState >= 2) tryPlay()
+
+    return () => {
+      el.removeEventListener('loadeddata', tryPlay)
+    }
+  }, [])
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+      muted
+      loop
+      playsInline
+      preload="auto"
+    />
+  )
+}
 
 export default function SalaEsperaPage() {
   const { connect, lastCalledTicket, clearLastCalledTicket, sliderUpdateTrigger } = useWebSocket()
@@ -112,35 +171,34 @@ export default function SalaEsperaPage() {
   }, [])
 
   const speakAnnouncement = useCallback((ticketNumber: string) => {
-    if ('speechSynthesis' in window) {
+    try {
+      if (!('speechSynthesis' in window) || !window.speechSynthesis) return
       window.speechSynthesis.cancel()
-      
-      const speak = () => {
-        const message = `Turno ${ticketNumber}, por favor pase a recepción`
-        const utterance = new SpeechSynthesisUtterance(message)
-        utterance.lang = 'es-MX'
-        utterance.rate = 0.85
-        utterance.pitch = 1
-        utterance.volume = 1
-        
-        const voices = window.speechSynthesis.getVoices()
-        // Prefiere voces femeninas limpias
+
+      const message = `Turno ${ticketNumber}, por favor pase a recepción`
+      const utterance = new SpeechSynthesisUtterance(message)
+      utterance.lang = 'es-MX'
+      utterance.rate = 0.85
+      utterance.pitch = 1
+      utterance.volume = 1
+
+      const voices = window.speechSynthesis.getVoices()
+      if (voices.length > 0) {
         const sabinaVoice = voices.find(v => v.name.toLowerCase().includes('sabina'))
         const mexicanVoice = voices.find(v => v.lang === 'es-MX')
         const spanishVoice = voices.find(v => v.lang.startsWith('es'))
         utterance.voice = sabinaVoice || mexicanVoice || spanishVoice || null
-        
-        window.speechSynthesis.speak(utterance)
       }
-      
+
       setTimeout(() => {
-        if (window.speechSynthesis.getVoices().length > 0) {
-          speak()
-        } else {
-          window.speechSynthesis.onvoiceschanged = () => speak()
-          setTimeout(speak, 100)
+        try {
+          window.speechSynthesis.speak(utterance)
+        } catch (e) {
+          console.warn('Error en speechSynthesis.speak:', e)
         }
       }, 1200)
+    } catch (e) {
+      console.warn('SpeechSynthesis no disponible en este dispositivo:', e)
     }
   }, [])
 
@@ -155,7 +213,7 @@ export default function SalaEsperaPage() {
 
       try {
         playChime()
-      } catch (e) {
+      } catch {
         console.warn("AudioContext bloqueado o no soportado.")
       }
       
@@ -321,13 +379,8 @@ export default function SalaEsperaPage() {
                         className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
                       />
                     ) : slider.media_type === 'VIDEO' && (slider.video_url || slider.video) ? (
-                      <video
+                      <VideoPlayer
                         src={resolveMediaUrl(slider.video_url || slider.video)}
-                        className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
                       />
                     ) : null}
                   </div>

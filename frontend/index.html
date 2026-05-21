@@ -12,9 +12,35 @@
     <title>Biogenic — Sistema de Turnos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <style>
+      .skip-link {
+        position: absolute;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+      .skip-link:focus {
+        position: fixed;
+        width: auto; height: auto;
+        padding: 0; margin: 0;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+        top: 0.5rem; left: 0.5rem;
+        z-index: 9999;
+        padding: 0.5rem 1rem;
+        background: #00b4d8;
+        color: #0f1c2e;
+        border-radius: 0.5rem;
+        font-weight: 600;
+      }
+    </style>
   </head>
   <body>
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-[#00b4d8] focus:text-[#0f1c2e] focus:rounded-lg focus:font-semibold">
+    <a href="#main-content" class="skip-link">
       Saltar al contenido principal
     </a>
     <div id="root"></div>

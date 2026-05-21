@@ -25,10 +25,12 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 class WebSocketManager {
   private ws: WebSocket | null = null
   private messageHandlers: Set<(event: WSEvent) => void> = new Set()
+  private stateHandlers: Set<(connected: boolean) => void> = new Set()
   private reconnectAttempts = 0
-  private maxReconnectAttempts = 5
-  private reconnectDelay = 3000
+  private maxReconnectAttempts = 50
+  private reconnectDelay = 2000
   private currentChannel: string | null = null
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
   connect(channel: string = 'checkins'): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -46,6 +48,7 @@ class WebSocketManager {
         this.ws.onopen = () => {
           console.log('WebSocket conectado')
           this.reconnectAttempts = 0
+          this.stateHandlers.forEach(h => h(true))
           resolve()
         }
 
@@ -60,6 +63,7 @@ class WebSocketManager {
 
         this.ws.onclose = () => {
           console.log('WebSocket desconectado')
+          this.stateHandlers.forEach(h => h(false))
           this.attemptReconnect()
         }
 
@@ -74,23 +78,40 @@ class WebSocketManager {
   }
 
   private attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts && this.currentChannel) {
+    if (this.currentChannel) {
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        this.reconnectAttempts = Math.floor(this.maxReconnectAttempts / 2)
+      }
       this.reconnectAttempts++
-      console.log(`Intentando reconectar (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`)
-      setTimeout(() => {
+      const backoff = Math.min(30000, this.reconnectDelay * Math.pow(1.3, this.reconnectAttempts))
+      console.log(`Reconectando (intento ${this.reconnectAttempts}, espera ${Math.round(backoff)}ms)...`)
+      this.reconnectTimer = setTimeout(() => {
         if (this.currentChannel) {
           this.connect(this.currentChannel).catch(console.error)
         }
-      }, this.reconnectDelay)
+      }, backoff)
     }
   }
 
   disconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
     if (this.ws) {
       this.ws.close()
       this.ws = null
     }
     this.currentChannel = null
+    this.reconnectAttempts = 0
+  }
+
+  addStateHandler(handler: (connected: boolean) => void) {
+    this.stateHandlers.add(handler)
+  }
+
+  removeStateHandler(handler: (connected: boolean) => void) {
+    this.stateHandlers.delete(handler)
   }
 
   isConnected(): boolean {
@@ -114,6 +135,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [lastNewTicket, setLastNewTicket] = useState<Ticket | null>(null)
   const [sliderUpdateTrigger, setSliderUpdateTrigger] = useState(0)
   const handlerRef = useRef<((event: WSEvent) => void) | null>(null)
+  const stateHandlerRef = useRef<((connected: boolean) => void) | null>(null)
 
   const handleWSMessage = useCallback((event: WSEvent) => {
     if (event.type === 'ticket_called') {
@@ -133,20 +155,20 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
   const connect = useCallback(async (channel: string = 'checkins'): Promise<void> => {
     try {
-      // Remover handler anterior si existe
       if (handlerRef.current) {
         wsManager.removeMessageHandler(handlerRef.current)
       }
-      
+      if (stateHandlerRef.current) {
+        wsManager.removeStateHandler(stateHandlerRef.current)
+      }
+
       handlerRef.current = handleWSMessage
       wsManager.addMessageHandler(handleWSMessage)
+
+      stateHandlerRef.current = (connected: boolean) => setIsConnected(connected)
+      wsManager.addStateHandler(stateHandlerRef.current)
+
       await wsManager.connect(channel)
-      setIsConnected(true)
-      
-      // Verificar conexión periódicamente
-      setInterval(() => {
-        setIsConnected(wsManager.isConnected())
-      }, 3000)
     } catch (error) {
       console.error('Error conectando WebSocket:', error)
       setIsConnected(false)
@@ -157,6 +179,10 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     if (handlerRef.current) {
       wsManager.removeMessageHandler(handlerRef.current)
       handlerRef.current = null
+    }
+    if (stateHandlerRef.current) {
+      wsManager.removeStateHandler(stateHandlerRef.current)
+      stateHandlerRef.current = null
     }
     wsManager.disconnect()
     setIsConnected(false)

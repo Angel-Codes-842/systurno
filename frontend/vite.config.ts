@@ -6,11 +6,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true, // Permite acceso desde LAN
+    host: true,
   },
   resolve: {
     alias: {
       '@': '/src',
     },
+  },
+  build: {
+    target: 'es2015',
   },
 })
