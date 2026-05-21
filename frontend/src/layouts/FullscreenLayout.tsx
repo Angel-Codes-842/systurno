@@ -6,7 +6,7 @@ interface FullscreenLayoutProps {
 
 export default function FullscreenLayout({ children }: FullscreenLayoutProps) {
   return (
-    <div className="fullscreen-app">
+    <div className="fullscreen-app bg-bg text-text min-h-screen w-full">
       {children}
     </div>
   )

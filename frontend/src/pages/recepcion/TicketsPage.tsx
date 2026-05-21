@@ -115,7 +115,6 @@ export default function TicketsPage() {
     }
   }
 
-  // Orden de prioridades: 1. Resultados, 2. Análisis, 3. Presupuesto
   const getPriority = (serviceType: string | undefined) => {
     switch (serviceType) {
       case 'RESULTS': return 1;
@@ -179,19 +178,19 @@ export default function TicketsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col font-sans overflow-x-hidden" style={{ minHeight: '100dvh' }}>
+    <div className="bg-bg flex flex-col font-sans overflow-x-hidden" style={{ minHeight: '100dvh' }}>
       <Navbar 
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         menuItems={menuItems}
         currentTime={currentTime}
         isConnected={isConnected}
-        loadTickets={loadTickets}
+        tvLive={true}
       />
 
-      <main id="main-content" className="flex-1 p-6 w-full">
+      <main id="main-content" className="flex-1 bg-surface-2 px-8 py-10 w-full">
         {activeSection === 'turnos' ? (
-          <div className="max-w-[1400px] mx-auto space-y-6">
+          <div className="max-w-[1500px] mx-auto space-y-10">
             
             <StatsResumen 
               total={tickets.length} 
@@ -201,25 +200,27 @@ export default function TicketsPage() {
             />
 
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-24 rounded-2xl border border-border bg-surface-2 shadow-sm">
-                <Loader2 className="w-10 h-10 text-primary animate-spin mb-3" />
-                <p className="text-sm text-text-muted font-medium">Sincronizando sistema...</p>
+              <div className="flex flex-col items-center justify-center py-32 rounded-2xl border border-border bg-surface shadow-sm">
+                <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+                <p className="text-base text-text-muted font-bold uppercase tracking-widest">Sincronizando sistema...</p>
               </div>
             ) : (
-              <PanelLlamados 
-                waitingTickets={waitingTickets} 
-                calledTickets={calledTickets} 
-                handleCallTicket={handleCallTicket} 
-                handleAttendTicket={handleAttendTicket}
-                handleCancelTicket={handleCancelTicket}
-                handleRecallTicket={handleRecallTicket} 
-              />
-            )}
+              <div className="space-y-10">
+                <PanelLlamados 
+                  waitingTickets={waitingTickets} 
+                  calledTickets={calledTickets} 
+                  handleCallTicket={handleCallTicket} 
+                  handleAttendTicket={handleAttendTicket}
+                  handleCancelTicket={handleCancelTicket}
+                  handleRecallTicket={handleRecallTicket} 
+                />
 
-            <TurnosCompletados attendedTickets={attendedTickets} />
+                <TurnosCompletados attendedTickets={attendedTickets} />
+              </div>
+            )}
           </div>
         ) : (
-          <div className="max-w-[1400px] mx-auto">
+          <div className="max-w-[1500px] mx-auto">
             <SliderManager />
           </div>
         )}

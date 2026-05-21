@@ -19,6 +19,12 @@ cd systurno
 - Panel de Turnos: http://localhost:3000/turnos
 - Sala de Espera: http://localhost:3000/sala-espera
 
+> Para producción local en red LAN:
+> - Copia `backend/.env.example` a `backend/.env`
+> - Usa `ALLOWED_HOSTS=localhost,127.0.0.1,192.168.x.x`
+> - Ajusta `CORS_ALLOWED_ORIGINS` para la URL del frontend
+> - Deja `CORS_ALLOW_ALL_ORIGINS=False` en ambientes cerrados
+
 ---
 
 ## Para Producción (Ubuntu Server)

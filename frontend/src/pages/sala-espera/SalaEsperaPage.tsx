@@ -49,7 +49,7 @@ const playChime = () => {
 };
 
 export default function SalaEsperaPage() {
-  const { connect, lastCalledTicket, clearLastCalledTicket, isConnected, sliderUpdateTrigger } = useWebSocket()
+  const { connect, lastCalledTicket, clearLastCalledTicket, sliderUpdateTrigger } = useWebSocket()
   const [isAnimating, setIsAnimating] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [recentCalls, setRecentCalls] = useState<DisplayInfo[]>([])
@@ -184,28 +184,22 @@ export default function SalaEsperaPage() {
   return (
     <div className="h-screen w-full bg-surface-2 flex flex-col font-sans overflow-hidden select-none">
 
-      {/* Header Corporativo Limpio */}
-      <header className="bg-surface px-12 py-6 flex justify-between items-center z-10 border-b border-border shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-48">
+      {/* Header Corporativo Minimalista - Texto Ajustado para TV */}
+      <header className="bg-surface px-8 py-2 flex justify-between items-center z-10 border-b border-border shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-28">
             <img src="/logo.jpg" alt="Biogenic Laboratorio" className="w-full h-auto object-contain" />
           </div>
         </div>
         
-        <div className="flex items-center gap-12">
-          <div className="text-right border-r border-border pr-12">
-            <p className="text-text-muted font-bold tracking-widest text-xs uppercase mb-1">
-              Hora Central
-            </p>
-            <p className="text-5xl font-extrabold text-primary tabular-nums tracking-tight leading-none">
+        <div className="flex items-center gap-8">
+          <div className="text-right border-r border-border pr-8">
+            <p className="text-4xl font-black text-primary tabular-nums tracking-tighter leading-none">
               {currentTime.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-text-muted font-bold tracking-widest text-xs uppercase mb-1">
-              Fecha
-            </p>
-            <p className="text-2xl font-bold text-text tracking-wide leading-none capitalize">
+            <p className="text-2xl font-extrabold text-text tracking-tight leading-none capitalize">
               {currentTime.toLocaleDateString('es-PY', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
@@ -214,68 +208,68 @@ export default function SalaEsperaPage() {
 
       <main className="flex-1 flex overflow-hidden z-10">
         
-        {/* Lado Izquierdo: Area de Turnos (70%) */}
-        <div className="w-[70%] flex flex-col p-10 gap-8 bg-surface-2">
+        {/* Lado Izquierdo: Area de Turnos (55%) */}
+        <div className="w-[55%] flex flex-col p-8 gap-8 bg-surface-2 border-r border-border">
           
           {/* Main Display Area */}
-          <div className={`flex-1 flex flex-col justify-center items-center rounded-3xl p-12 transition-all duration-500 ease-out border-2 ${
+          <div className={`flex-1 flex flex-col justify-center items-center rounded-3xl p-10 transition-all duration-500 ease-out border-2 ${
             isAnimating 
-              ? 'bg-surface border-primary shadow-lg scale-[1.02]' 
+              ? 'bg-surface border-primary shadow-lg scale-[1.01]' 
               : 'bg-surface border-border shadow-sm scale-100'
           }`}>
             
             {lastCalled ? (
               <div className="text-center w-full animate-fade-in flex flex-col items-center justify-center">
-                <p className={`text-3xl uppercase tracking-widest font-extrabold mb-8 transition-colors duration-500 ${
+                <p className={`text-2xl uppercase tracking-[0.25em] font-extrabold mb-8 transition-colors duration-500 ${
                   isAnimating ? 'text-primary' : 'text-text-muted'
                 }`}>
-                  {isAnimating ? 'TURNO LLAMADO AHORA' : 'ÚLTIMO TURNO LLAMADO'}
+                  {isAnimating ? 'LLAMANDO TURNO' : 'ÚLTIMO LLAMADO'}
                 </p>
                 
-                <div className={`w-full max-w-4xl py-24 px-12 rounded-[3rem] mb-12 flex justify-center items-center transition-colors duration-500 ${
+                <div className={`w-full py-20 px-8 rounded-[3rem] mb-10 flex justify-center items-center transition-colors duration-500 ${
                   isAnimating 
                     ? 'bg-primary text-white shadow-xl' 
                     : 'bg-surface-2 text-text border border-border shadow-inner'
                 }`}>
-                  <p className="text-[18rem] font-bold leading-none tracking-tighter tabular-nums drop-shadow-sm">
+                  <p className="text-[14rem] font-bold leading-none tracking-tighter tabular-nums drop-shadow-md">
                     {lastCalled.ticketNumber}
                   </p>
                 </div>
 
-                <div className={`px-16 py-6 inline-flex rounded-2xl border transition-colors duration-500 ${
+                <div className={`px-12 py-5 inline-flex rounded-2xl border transition-colors duration-500 ${
                   isAnimating 
                     ? 'bg-success/10 border-success/30 text-success' 
                     : 'bg-surface text-text-muted border-border'
                 }`}>
-                  <p className="text-4xl font-extrabold flex items-center justify-center gap-6 uppercase tracking-wider">
+                  <p className="text-3xl font-extrabold flex items-center justify-center gap-5 uppercase tracking-wider">
                     Pase a Recepción
                   </p>
                 </div>
               </div>
             ) : (
               // Modo Reposo
-              <div className="flex-1 flex flex-col justify-center items-center animate-fade-in text-center">
-                 <Monitor className="w-32 h-32 text-border-2 mb-10" strokeWidth={1} />
-                 <h2 className="text-5xl font-extrabold text-text-muted tracking-tight mb-4">
-                   Sistema de Turnos Activo
+              <div className="flex-1 flex flex-col justify-center items-center animate-fade-in text-center p-8">
+                 <Monitor className="w-24 h-24 text-border-2 mb-10" strokeWidth={1} />
+                 <h2 className="text-4xl font-extrabold text-text-muted tracking-tight mb-4">
+                   Sistema Activo
                  </h2>
-                 <p className="text-2xl font-medium text-text-muted">
-                   Aguarde su turno en la sala, será llamado en breve.
+                 <p className="text-xl font-medium text-text-muted">
+                   Aguarde su turno, será llamado en breve.
                  </p>
               </div>
             )}
           </div>
 
           {/* Historial Inferior Organizado */}
-          <div className="h-[28%] bg-surface rounded-3xl border border-border p-8 shadow-sm flex flex-col">
-            <div className="flex items-center gap-6 mb-6">
-               <p className="text-text font-bold text-lg uppercase tracking-widest">Historial de Turnos</p>
+          <div className="h-[30%] bg-surface rounded-3xl border border-border p-8 shadow-sm flex flex-col">
+            <div className="flex items-center gap-5 mb-6">
+               <p className="text-text font-bold text-base uppercase tracking-widest">Historial</p>
                <div className="h-px bg-border flex-1"></div>
             </div>
             
             {previousCalls.length > 0 ? (
-              <div className="flex-1 grid grid-cols-4 lg:grid-cols-8 gap-4 items-center">
-                {previousCalls.map((call, index) => (
+              <div className="flex-1 grid grid-cols-4 gap-4 items-center">
+                {previousCalls.slice(0, 8).map((call, index) => (
                   <div
                     key={`${call.ticketNumber}-${index}`}
                     className="bg-surface-2 border border-border rounded-xl p-4 flex flex-col items-center justify-center shadow-sm"
@@ -283,7 +277,7 @@ export default function SalaEsperaPage() {
                     <span className="text-3xl font-bold text-text mb-1 tabular-nums">
                       {call.ticketNumber}
                     </span>
-                    <span className="text-text-muted font-semibold text-xs tracking-wider">
+                    <span className="text-text-muted font-semibold text-[11px] tracking-wider">
                       {call.calledAt.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
@@ -291,14 +285,14 @@ export default function SalaEsperaPage() {
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-surface-2 rounded-2xl border border-dashed border-border">
-                <p className="text-text-muted text-lg font-bold uppercase tracking-widest">Sin turnos en el historial</p>
+                <p className="text-text-muted text-sm font-bold uppercase tracking-widest">Sin historial</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Lado Derecho: Contenido Multimedia Institucional (30%) */}
-        <div className="w-[30%] bg-surface relative border-l border-border overflow-hidden z-20">
+        {/* Lado Derecho: Contenido Multimedia Institucional (45%) */}
+        <div className="w-[45%] bg-surface-2 relative overflow-hidden z-20">
           {sliders.length > 0 ? (
             <div className="absolute inset-0">
               {sliders.map((slider, index) => (
@@ -308,17 +302,28 @@ export default function SalaEsperaPage() {
                     index === currentSlideIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
                 >
-                  <div className="absolute inset-0 flex items-center justify-center bg-surface-2">
+                  {/* Fondo con Blur para rellenar espacios estéticamente */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    {slider.media_type === 'IMAGE' && (slider.image_url || slider.image) && (
+                      <img
+                        src={resolveMediaUrl(slider.image_url || slider.image)}
+                        alt=""
+                        className="w-full h-full object-cover blur-2xl opacity-20 scale-110"
+                      />
+                    )}
+                  </div>
+
+                  <div className="absolute inset-0 flex items-center justify-center p-8">
                     {slider.media_type === 'IMAGE' && (slider.image_url || slider.image) ? (
                       <img
                         src={resolveMediaUrl(slider.image_url || slider.image)}
                         alt={slider.title}
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
                       />
                     ) : slider.media_type === 'VIDEO' && (slider.video_url || slider.video) ? (
                       <video
                         src={resolveMediaUrl(slider.video_url || slider.video)}
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
                         autoPlay
                         muted
                         loop
@@ -331,26 +336,22 @@ export default function SalaEsperaPage() {
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center bg-surface-2 text-center p-12">
-               <img src="/logo.jpg" alt="Logo" className="w-48 h-auto opacity-30 grayscale mb-6" />
-               <p className="text-xl font-bold text-text-muted uppercase tracking-widest max-w-[200px]">Información Institucional</p>
+               <img src="/logo.jpg" alt="Logo" className="w-64 h-auto opacity-30 grayscale mb-8" />
+               <p className="text-2xl font-bold text-text-muted uppercase tracking-[0.2em]">Biogenic</p>
+               <p className="text-lg text-text-muted mt-2 uppercase tracking-widest">Información Institucional</p>
             </div>
           )}
         </div>
       </main>
 
-      {/* Corporate Minimal Footer */}
-      <footer className="bg-surface py-3 px-8 flex justify-between items-center z-30 border-t border-border">
+      {/* Corporate Minimal Footer - Ultra Slim */}
+      <footer className="bg-surface py-1 px-8 flex justify-between items-center z-30 border-t border-border">
         <div className="flex items-center gap-6">
-          <p className="text-text-muted text-xs font-semibold tracking-widest uppercase">
-            Biogenic - Todos los derechos reservados
+          <p className="text-text-muted text-[10px] font-semibold tracking-widest uppercase">
+            Biogenic
           </p>
         </div>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-3 bg-surface-2 px-4 py-1.5 rounded-full border border-border">
-            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-success' : 'bg-danger'}`}></span>
-            <span className="text-text text-xs font-bold uppercase tracking-wider">{isConnected ? 'Conectado al Servidor' : 'Desconectado'}</span>
-          </div>
-        </div>
+        
       </footer>
     </div>
   )

@@ -1,5 +1,4 @@
 import React from 'react'
-import { Monitor, Calendar } from 'lucide-react'
 
 export interface MenuItem {
   id: string
@@ -13,7 +12,7 @@ export interface NavbarProps {
   menuItems: MenuItem[]
   currentTime: Date
   isConnected: boolean
-  loadTickets: () => void
+  tvLive?: boolean
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -22,7 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   menuItems,
   currentTime,
   isConnected,
-  loadTickets,
+  tvLive = false,
 }) => {
   const dayNames = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
   const dayName = dayNames[currentTime.getDay()]
@@ -34,48 +33,36 @@ export const Navbar: React.FC<NavbarProps> = ({
   })
 
   return (
-    <header className="flex items-center justify-between px-8 py-5 border-b border-border bg-surface sticky top-0 z-50">
-      {/* Izquierda: logo + tabs */}
-      <div className="flex items-center gap-8">
-        {/* Logo */}
-        <button
-          type="button"
-          className="flex items-center gap-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl transition-transform active:scale-95"
-          onClick={() => window.location.reload()}
-          aria-label="Recargar página"
-        >
-          <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-border shadow-sm">
-            <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+    <header className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 xl:gap-8 px-6 xl:px-10 py-5 bg-surface sticky top-0 z-50 shadow-sm border-b border-border-2">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-10 w-full xl:w-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shrink-0 shadow-sm">
+            B
           </div>
           <div className="text-left">
-            <p className="text-lg font-extrabold text-text tracking-wide leading-none">BIOGENIC</p>
-            <p className="text-[11px] text-primary font-bold tracking-widest mt-1">DASHBOARD</p>
+            <p className="text-sm font-black text-text tracking-widest leading-none uppercase">BIOGENIC</p>
+            <p className="text-[10px] text-attended font-bold tracking-widest mt-0.5 uppercase">DASHBOARD</p>
           </div>
-        </button>
+        </div>
 
-        {/* Segmented Control / Tabs */}
-        <nav className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface-2 border border-border/80 shadow-inner">
+        <nav className="flex flex-wrap items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border w-full lg:w-auto">
           {menuItems.map((item) => {
             const isActive = activeSection === item.id
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setActiveSection(item.id)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`
-                  relative flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl text-[13px] font-extrabold uppercase tracking-wide transition-all duration-300
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2
+                  flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-md text-[13px] font-bold transition-all duration-200 cursor-pointer select-none border
                   ${isActive 
-                    ? 'bg-surface text-primary border border-border/50 shadow-[0_4px_12px_rgb(0,0,0,0.05)] scale-100' 
-                    : 'bg-transparent text-text-muted hover:text-text hover:bg-surface/50 active:scale-95'
+                    ? 'bg-surface text-primary shadow-sm border-border' 
+                    : 'bg-transparent text-text-muted hover:text-text hover:bg-surface border-transparent hover:border-border'
                   }
                 `}
               >
-                {isActive && (
-                  <span className="absolute inset-0 rounded-xl ring-1 ring-primary/20 pointer-events-none" />
-                )}
-                <span className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'scale-100 opacity-70'}`}>
-                  {item.icon}
-                </span>
+                <span className={isActive ? 'opacity-100' : 'opacity-70'}>{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             )
@@ -83,35 +70,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
       </div>
 
-      {/* Derecha: monitor + fecha/hora + estado */}
-      <div className="flex items-center gap-6">
-        <button
-          onClick={loadTickets}
-          className="p-3 rounded-xl text-text-muted hover:bg-border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          aria-label="Sincronizar datos"
-        >
-          <Monitor className="w-6 h-6" aria-hidden="true" />
-        </button>
-
-        <div className="flex items-center gap-8">
-          <div className="text-right border-r border-border pr-8">
-            <div className="flex items-center justify-end gap-2 text-sm text-text-muted font-bold mb-1">
-              <Calendar className="w-4 h-4" aria-hidden="true" />
-              <span>{dayName} {dayNumber}</span>
-            </div>
-            <p className="text-[1.75rem] font-black font-mono tracking-wider text-text leading-none tabular-nums">
-              {timeStr}
-            </p>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full xl:w-auto justify-between xl:justify-end">
+        <div className="text-right">
+          <div className="text-[10px] text-text-muted font-bold uppercase tracking-widest">
+            {dayName} {dayNumber}
           </div>
+          <p className="text-xl font-black text-text tabular-nums tracking-tighter leading-none">
+            {timeStr}
+          </p>
+        </div>
 
-          <div className={`flex items-center gap-2.5 px-5 py-2.5 rounded-full border text-xs font-black tracking-widest ${
-            isConnected
-              ? 'bg-success/10 border-success/30 text-success shadow-sm'
-              : 'bg-danger/10 border-danger/30 text-danger shadow-sm'
-          }`}>
-            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-danger'}`} />
-            {isConnected ? 'EN RED' : 'ERROR'}
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {tvLive && (
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-called/10 text-called border border-called/20 text-[11px] font-black uppercase tracking-widest">
+              <span className="w-2.5 h-2.5 rounded-full bg-called animate-pulse" />
+              TV en vivo
+            </span>
+          )}
+
+          <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest border ${isConnected ? 'bg-attended/10 text-attended border-attended/20' : 'bg-canceled/10 text-canceled border-canceled/20'}`}>
+            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-attended' : 'bg-canceled'}`} />
+            {isConnected ? 'EN RED' : 'SIN RED'}
+          </span>
         </div>
       </div>
     </header>

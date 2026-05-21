@@ -35,11 +35,11 @@ function App() {
         
         {/* 404 */}
         <Route path="*" element={
-          <div className="flex items-center justify-center h-screen bg-gray-100">
-            <div className="text-center">
-              <h1 className="text-6xl font-bold text-gray-300 mb-4">404</h1>
-              <p className="text-gray-500 mb-6">Página no encontrada</p>
-              <a href="/kiosko" className="text-teal-600 hover:underline">Ir al Kiosko</a>
+          <div className="flex items-center justify-center min-h-screen bg-bg px-6 py-10">
+            <div className="max-w-md w-full rounded-[2rem] border border-border bg-surface p-12 shadow-sm text-center">
+              <h1 className="text-6xl font-black text-text mb-4">404</h1>
+              <p className="text-text-muted mb-8">La ruta solicitada no existe. Regresa al kiosko para sacar un turno.</p>
+              <a href="/kiosko" className="inline-flex rounded-full bg-primary px-8 py-3 text-white font-bold shadow-sm transition hover:bg-[#0ea5c9]">Ir al Kiosko</a>
             </div>
           </div>
         } />
