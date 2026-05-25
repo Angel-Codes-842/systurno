@@ -7,7 +7,8 @@ from rest_framework_simplejwt.views import (
 
 from .views import (
     UserViewSet, PatientViewSet, CheckinViewSet, TicketViewSet,
-    SliderViewSet, list_specialists, KioskCheckinView, CurrentUserView
+    SliderViewSet, list_specialists, KioskCheckinView, CurrentUserView,
+    text_to_speech,
 )
 
 # Crear router para viewsets
@@ -30,4 +31,5 @@ urlpatterns = [
     # Endpoints públicos para el kiosko
     path('specialists/', list_specialists, name='list_specialists'),
     path('kiosk/checkin/', KioskCheckinView.as_view(), name='kiosk_checkin'),
+    path('tts/', text_to_speech, name='text_to_speech'),
 ]

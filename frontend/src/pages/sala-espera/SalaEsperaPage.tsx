@@ -115,6 +115,7 @@ export default function SalaEsperaPage() {
   const [sliders, setSliders] = useState<Slider[]>([])
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const loadSliders = useCallback(async () => {
     try {
@@ -140,12 +141,19 @@ export default function SalaEsperaPage() {
     loadSliders()
     const sliderInterval = setInterval(loadSliders, 2 * 60 * 1000)
     
-    if ('speechSynthesis' in window) {
+    const hasSpeechSynthesis = 'speechSynthesis' in window && !!window.speechSynthesis
+
+    if (hasSpeechSynthesis) {
       window.speechSynthesis.getVoices()
       window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
     }
     
-    return () => clearInterval(sliderInterval)
+    return () => {
+      clearInterval(sliderInterval)
+      if (hasSpeechSynthesis && 'speechSynthesis' in window && window.speechSynthesis.onvoiceschanged) {
+        window.speechSynthesis.onvoiceschanged = null
+      }
+    }
   }, [connect, loadSliders])
 
   useEffect(() => {
@@ -170,12 +178,47 @@ export default function SalaEsperaPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const speakAnnouncement = useCallback((ticketNumber: string) => {
+  const playRemoteTts = useCallback(async (message: string) => {
     try {
-      if (!('speechSynthesis' in window) || !window.speechSynthesis) return
+      if (audioRef.current) {
+        audioRef.current.pause()
+        URL.revokeObjectURL(audioRef.current.src)
+        audioRef.current = null
+      }
+
+      const response = await fetch(`${API_URL}/tts/?text=${encodeURIComponent(message)}&lang=es`)
+      if (!response.ok) throw new Error('Error cargando audio TTS')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      audio.volume = 1
+      audio.onended = () => {
+        if (audioRef.current === audio) {
+          URL.revokeObjectURL(url)
+          audioRef.current = null
+        }
+      }
+      audio.play().catch((error) => {
+        console.warn('Error reproduciendo fallback TTS:', error)
+      })
+    } catch (error) {
+      console.warn('Fallback TTS falló:', error)
+    }
+  }, [])
+
+  const speakAnnouncement = useCallback((ticketNumber: string) => {
+    const message = `Turno ${ticketNumber}, por favor pase a recepción`
+
+    if (!('speechSynthesis' in window) || !window.speechSynthesis) {
+      playRemoteTts(message)
+      return
+    }
+
+    try {
       window.speechSynthesis.cancel()
 
-      const message = `Turno ${ticketNumber}, por favor pase a recepción`
       const utterance = new SpeechSynthesisUtterance(message)
       utterance.lang = 'es-MX'
       utterance.rate = 0.85
@@ -195,12 +238,14 @@ export default function SalaEsperaPage() {
           window.speechSynthesis.speak(utterance)
         } catch (e) {
           console.warn('Error en speechSynthesis.speak:', e)
+          playRemoteTts(message)
         }
       }, 1200)
     } catch (e) {
       console.warn('SpeechSynthesis no disponible en este dispositivo:', e)
+      playRemoteTts(message)
     }
-  }, [])
+  }, [playRemoteTts])
 
   useEffect(() => {
     if (lastCalledTicket) {
@@ -233,7 +278,18 @@ export default function SalaEsperaPage() {
   }, [lastCalledTicket, speakAnnouncement, clearLastCalledTicket])
 
   useEffect(() => {
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current) }
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
+      if (audioRef.current) {
+        audioRef.current.pause()
+        try {
+          URL.revokeObjectURL(audioRef.current.src)
+        } catch (err) {
+          console.warn('Error revocando URL de audio:', err)
+        }
+        audioRef.current = null
+      }
+    }
   }, [])
 
   const lastCalled = recentCalls[0] || null

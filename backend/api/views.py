@@ -5,7 +5,10 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Count
 from django.utils import timezone
+from django.http import HttpResponse
 from datetime import datetime, timedelta
+from io import BytesIO
+from gtts import gTTS
 
 def get_today_time_range():
     """Helper method to get the start and end of the current day in the local timezone."""
@@ -87,6 +90,28 @@ def list_specialists(request):
     specialists = User.objects.filter(role='SPECIALIST', is_active=True)
     serializer = SpecialistSerializer(specialists, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def text_to_speech(request):
+    """Genera audio TTS para navegadores sin speechSynthesis nativo."""
+    text = request.query_params.get('text', '').strip()
+    lang = request.query_params.get('lang', 'es')
+    if not text:
+        return Response({'detail': 'El texto es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        buffer = BytesIO()
+        tts = gTTS(text=text, lang=lang)
+        tts.write_to_fp(buffer)
+        buffer.seek(0)
+        return HttpResponse(buffer.read(), content_type='audio/mpeg')
+    except Exception as e:
+        return Response(
+            {'detail': 'Error generando audio TTS.', 'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 class PatientViewSet(viewsets.ModelViewSet):

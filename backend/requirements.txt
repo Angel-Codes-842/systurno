@@ -5,6 +5,7 @@
 # Core Django
 Django>=5.0,<6.0
 python-dotenv>=1.0.0
+gTTS>=2.3.0
 
 # Django REST Framework
 djangorestframework>=3.14.0
