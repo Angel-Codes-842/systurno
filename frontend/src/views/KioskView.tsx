@@ -188,7 +188,7 @@ export function KioskView() {
 
       {/* ── CUERPO ── */}
       <main style={{
-        flexGrow: 1, zIndex: 1,
+        flexGrow: 1, zIndex: 2,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         padding: '24px 32px',
@@ -396,7 +396,7 @@ export function KioskView() {
 
       {/* ── FOOTER ── */}
       <footer style={{
-        flexShrink: 0, zIndex: 1, textAlign: 'center',
+        flexShrink: 0, zIndex: 2, textAlign: 'center',
         padding: '12px 0', color: 'rgba(255,255,255,0.2)',
         fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
         borderTop: '1px solid rgba(255,255,255,0.06)',
