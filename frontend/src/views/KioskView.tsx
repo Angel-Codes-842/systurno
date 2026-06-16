@@ -3,8 +3,8 @@
  *
  * Diseñado para pantalla touch 14-15":
  *  - Targets táctiles mínimo 80px altura
- *  - Fondo navy consistente con el Display
- *  - 3 tarjetas de servicio grandes e inmersivas
+ *  - Video de fondo turnero.mp4 con overlay sutil
+ *  - 3 tarjetas de servicio blancas sólidas
  *  - Success screen con número prominente
  *  - Ticket térmico 80mm al imprimir
  */
