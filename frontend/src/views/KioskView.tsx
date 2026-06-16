@@ -153,8 +153,10 @@ export function KioskView() {
       {/* ── HEADER ── */}
       <header style={{
         flexShrink: 0, height: 76, zIndex: 2,
-        background: '#1B2A4A',
-        backgroundImage: 'repeating-linear-gradient(-45deg,transparent,transparent 14px,rgba(255,255,255,0.015) 14px,rgba(255,255,255,0.015) 15px)',
+        background: 'rgba(27,42,74,0.82)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 32px',
@@ -201,17 +203,19 @@ export function KioskView() {
               {/* Título */}
               <div style={{ textAlign: 'center', marginBottom: 36 }}>
                 <h1 style={{
-                  margin: 0, color: '#f0f0f0',
+                  margin: 0,
+                  color: '#0F172A',
                   fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
                   fontWeight: 800, letterSpacing: '-0.01em',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                  textShadow: '0 0 16px rgba(255,255,255,0.7), 0 2px 4px rgba(255,255,255,0.5)',
                 }}>
                   ¿Cuál es el motivo de su visita?
                 </h1>
                 <p style={{
-                  margin: '8px 0 0', color: 'rgba(255,255,255,0.65)',
+                  margin: '8px 0 0',
+                  color: '#1e293b',
                   fontSize: 'clamp(0.9rem, 1.5vw, 1rem)', fontWeight: 500,
-                  textShadow: '0 2px 6px rgba(0,0,0,0.4)',
+                  textShadow: '0 0 12px rgba(255,255,255,0.6), 0 2px 4px rgba(255,255,255,0.4)',
                 }}>
                   Toque la opción correspondiente para generar su turno
                 </p>
