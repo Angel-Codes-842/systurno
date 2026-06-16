@@ -153,38 +153,49 @@ export function KioskView() {
       {/* ── HEADER ── */}
       <header style={{
         flexShrink: 0, height: 76, zIndex: 2,
-        background: 'rgba(27,42,74,0.82)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        background: 'transparent',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 32px',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         {/* Logo */}
         <div style={{
           background: '#fff', borderRadius: 10,
           padding: '6px 14px', display: 'flex', alignItems: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
         }}>
           <img src="/logo_biogenic.png" alt="Biogenic"
             style={{ height: 46, objectFit: 'contain', display: 'block' }} />
         </div>
 
-        {/* Fecha + Hora */}
-        <div style={{ textAlign: 'right' }}>
-          <div style={{
-            fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)',
-            textTransform: 'capitalize', letterSpacing: '0.04em',
+        {/* Fecha + Hora — píldora como DisplayView */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 12,
+          backgroundColor: 'rgba(15,23,42,0.75)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          borderRadius: 9999,
+          padding: '9px 22px',
+          whiteSpace: 'nowrap', flexShrink: 0,
+          border: '1px solid rgba(255,255,255,0.12)',
+        }}>
+          <span style={{
+            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
+            textTransform: 'capitalize',
           }}>
             {date}
-          </div>
-          <div style={{
-            fontSize: 30, fontWeight: 800, color: '#ffffff',
-            fontVariantNumeric: 'tabular-nums', letterSpacing: '0.08em',
-            lineHeight: 1.1,
+          </span>
+          <span style={{
+            display: 'inline-block', width: 1, height: 16,
+            backgroundColor: 'rgba(255,255,255,0.35)',
+          }} />
+          <span style={{
+            fontSize: 16, fontWeight: 800, color: '#ffffff',
+            letterSpacing: '0.05em', fontVariantNumeric: 'tabular-nums',
           }}>
             {time}
-          </div>
+          </span>
         </div>
       </header>
 
