@@ -319,10 +319,10 @@ export function KioskView() {
                 <CheckIcon style={{ fontSize: 44, color: '#16A34A' }} />
               </div>
 
-              <div style={{ color: '#16A34A', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
+              <div style={{ color: '#16A34A', fontSize: 18, fontWeight: 700, marginBottom: 6, textShadow: '0 1px 4px rgba(255,255,255,0.3)' }}>
                 ¡Turno generado exitosamente!
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, marginBottom: 28 }}>
+              <div style={{ color: '#1e293b', fontSize: 14, marginBottom: 28, fontWeight: 500, textShadow: '0 0 10px rgba(255,255,255,0.5), 0 1px 3px rgba(255,255,255,0.3)' }}>
                 Su número de atención es:
               </div>
 
@@ -357,8 +357,9 @@ export function KioskView() {
               </div>
 
               <div style={{
-                color: 'rgba(255,255,255,0.55)', fontSize: 14,
+                color: '#1e293b', fontSize: 14, fontWeight: 500,
                 lineHeight: 1.6, marginBottom: 32,
+                textShadow: '0 0 10px rgba(255,255,255,0.5), 0 1px 3px rgba(255,255,255,0.3)',
               }}>
                 Retire su ticket impreso y aguarde en la<br />
                 sala de espera a ser llamado en la pantalla.
