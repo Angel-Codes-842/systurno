@@ -152,9 +152,9 @@ export function KioskView() {
 
       {/* ── HEADER ── */}
       <header style={{
-        flexShrink: 0, height: 76, zIndex: 1,
-        background: 'rgba(255,255,255,0.04)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        flexShrink: 0, height: 76, zIndex: 2,
+        background: '#1B2A4A',
+        backgroundImage: 'repeating-linear-gradient(-45deg,transparent,transparent 14px,rgba(255,255,255,0.015) 14px,rgba(255,255,255,0.015) 15px)',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 32px',
