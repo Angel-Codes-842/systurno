@@ -425,12 +425,12 @@ class TicketViewSet(viewsets.ModelViewSet):
         
         # Ordenamiento según estado
         if status_filter == 'WAITING':
-            # Prioridad: 1. Retirar Resultados, 2. Realizar Análisis, 3. Presupuesto
+            # Prioridad: 1. Retirar Resultados, 2. Presupuesto, 3. Realizar Análisis
             queryset = queryset.annotate(
                 priority=Case(
                     When(service_type='RESULTS', then=Value(1)),
-                    When(service_type='ANALYSIS', then=Value(2)),
-                    When(service_type='BUDGET', then=Value(3)),
+                    When(service_type='BUDGET', then=Value(2)),
+                    When(service_type='ANALYSIS', then=Value(3)),
                     default=Value(4),
                     output_field=IntegerField(),
                 )
