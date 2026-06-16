@@ -201,15 +201,17 @@ export function KioskView() {
               {/* Título */}
               <div style={{ textAlign: 'center', marginBottom: 36 }}>
                 <h1 style={{
-                  margin: 0, color: '#ffffff',
+                  margin: 0, color: '#f0f0f0',
                   fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
                   fontWeight: 800, letterSpacing: '-0.01em',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
                 }}>
                   ¿Cuál es el motivo de su visita?
                 </h1>
                 <p style={{
-                  margin: '8px 0 0', color: 'rgba(255,255,255,0.6)',
+                  margin: '8px 0 0', color: 'rgba(255,255,255,0.65)',
                   fontSize: 'clamp(0.9rem, 1.5vw, 1rem)', fontWeight: 500,
+                  textShadow: '0 2px 6px rgba(0,0,0,0.4)',
                 }}>
                   Toque la opción correspondiente para generar su turno
                 </p>
