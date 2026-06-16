@@ -400,90 +400,168 @@ function TurnosTab({ trigger }: { trigger: number }) {
         )}
       </Stack>
 
-      {/* ── PANEL DERECHO: Cola ── */}
-      <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography fontWeight={800} fontSize={16} color="#0F172A">Cola de espera</Typography>
+      {/* ── PANEL DERECHO: Cola de espera + Llamados ── */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+        {/* Cola de espera */}
+        <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Typography fontWeight={800} fontSize={16} color="#0F172A">Cola de espera</Typography>
+                <Box sx={{
+                  bgcolor: '#1B2A4A', color: '#fff',
+                  borderRadius: 99, px: 1.2, py: 0.15,
+                  fontSize: 12, fontWeight: 800, minWidth: 24, textAlign: 'center',
+                }}>
+                  {waiting.length}
+                </Box>
+              </Box>
+              <Tooltip title="Actualizar">
+                <IconButton size="small" onClick={() => { setLoading(true); refresh().finally(() => setLoading(false)); }}>
+                  {loading ? <CircularProgress size={18} /> : <RefreshIcon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            {waiting.length === 0 ? (
               <Box sx={{
-                bgcolor: '#1B2A4A', color: '#fff',
-                borderRadius: 99, px: 1.2, py: 0.15,
-                fontSize: 12, fontWeight: 800, minWidth: 24, textAlign: 'center',
+                bgcolor: '#F8FAFC', border: '1px dashed #CBD5E1',
+                borderRadius: 3, py: 4, textAlign: 'center',
               }}>
-                {waiting.length}
+                <Typography fontSize={13} color="#94A3B8">No hay turnos en espera.</Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.2} sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', pr: 0.5 }}>
+                {waiting.map((t, i) => {
+                  const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
+                  return (
+                    <Box key={t.id} sx={{
+                      display: 'flex', alignItems: 'center', gap: 2,
+                      bgcolor: i === 0 ? '#EFF6FF' : '#F8FAFC',
+                      border: i === 0 ? '1.5px solid #BFDBFE' : '1px solid #E2E8F0',
+                      borderRadius: 2.5, p: 1.5,
+                      transition: 'all 0.15s',
+                    }}>
+                      <Typography fontSize={12} fontWeight={700} color="#CBD5E1" sx={{ minWidth: 18, textAlign: 'center' }}>
+                        {i + 1}
+                      </Typography>
+
+                      <Box sx={{
+                        bgcolor: c.bg, borderRadius: 1.5,
+                        border: `1.5px solid ${c.border}`,
+                        px: 1.5, py: 0.5, minWidth: 68, textAlign: 'center',
+                      }}>
+                        <Typography fontWeight={900} fontSize={20} color={c.num}
+                          sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
+                          {t.ticket_number}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography fontSize={13} fontWeight={700} color="#0F172A">{c.label}</Typography>
+                        <Typography fontSize={11} color="#94A3B8" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TimeIcon fontSize="inherit" /> {fmtTime(t.created_at)}
+                        </Typography>
+                      </Box>
+
+                      <Button
+                        variant="contained" size="small"
+                        startIcon={acting === t.id ? <CircularProgress size={12} color="inherit" /> : <CallIcon />}
+                        onClick={() => handleCall(t)}
+                        disabled={!!acting}
+                        sx={{
+                          bgcolor: '#1B2A4A', fontWeight: 800, fontSize: 12,
+                          borderRadius: 2, whiteSpace: 'nowrap',
+                          '&:hover': { bgcolor: '#253A5E' },
+                        }}
+                      >
+                        Llamar
+                      </Button>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Llamados */}
+        <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Typography fontWeight={800} fontSize={16} color="#0F172A">Llamados</Typography>
+                <Box sx={{
+                  bgcolor: '#D97706', color: '#fff',
+                  borderRadius: 99, px: 1.2, py: 0.15,
+                  fontSize: 12, fontWeight: 800, minWidth: 24, textAlign: 'center',
+                }}>
+                  {calledList.length}
+                </Box>
               </Box>
             </Box>
-            <Tooltip title="Actualizar">
-              <IconButton size="small" onClick={() => { setLoading(true); refresh().finally(() => setLoading(false)); }}>
-                {loading ? <CircularProgress size={18} /> : <RefreshIcon fontSize="small" />}
-              </IconButton>
-            </Tooltip>
-          </Box>
 
-          {/* Cola */}
-          {waiting.length === 0 ? (
-            <Box sx={{
-              bgcolor: '#F8FAFC', border: '1px dashed #CBD5E1',
-              borderRadius: 3, py: 4, textAlign: 'center',
-            }}>
-              <Typography fontSize={13} color="#94A3B8">No hay turnos en espera.</Typography>
-            </Box>
-          ) : (
-            <Stack spacing={1.2} sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', pr: 0.5 }}>
-              {waiting.map((t, i) => {
-                const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
-                return (
-                  <Box key={t.id} sx={{
-                    display: 'flex', alignItems: 'center', gap: 2,
-                    bgcolor: i === 0 ? '#EFF6FF' : '#F8FAFC',
-                    border: i === 0 ? '1.5px solid #BFDBFE' : '1px solid #E2E8F0',
-                    borderRadius: 2.5, p: 1.5,
-                    transition: 'all 0.15s',
-                  }}>
-                    <Typography fontSize={12} fontWeight={700} color="#CBD5E1" sx={{ minWidth: 18, textAlign: 'center' }}>
-                      {i + 1}
-                    </Typography>
-
-                    {/* Chip número — mismo estilo display */}
-                    <Box sx={{
-                      bgcolor: c.bg, borderRadius: 1.5,
-                      border: `1.5px solid ${c.border}`,
-                      px: 1.5, py: 0.5, minWidth: 68, textAlign: 'center',
+            {calledList.length === 0 ? (
+              <Box sx={{
+                bgcolor: '#F8FAFC', border: '1px dashed #CBD5E1',
+                borderRadius: 3, py: 4, textAlign: 'center',
+              }}>
+                <Typography fontSize={13} color="#94A3B8">No hay turnos llamados.</Typography>
+              </Box>
+            ) : (
+              <Stack spacing={1.2} sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', pr: 0.5 }}>
+                {calledList.map(t => {
+                  const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
+                  return (
+                    <Box key={t.id} sx={{
+                      display: 'flex', alignItems: 'center', gap: 1.5,
+                      bgcolor: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 2.5, p: 1.5,
                     }}>
-                      <Typography fontWeight={900} fontSize={20} color={c.num}
-                        sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
-                        {t.ticket_number}
-                      </Typography>
-                    </Box>
+                      <Box sx={{
+                        bgcolor: c.bg, borderRadius: 1.5,
+                        border: `1.5px solid ${c.border}`,
+                        px: 1.5, py: 0.5, minWidth: 68, textAlign: 'center',
+                      }}>
+                        <Typography fontWeight={900} fontSize={20} color={c.num}
+                          sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
+                          {t.ticket_number}
+                        </Typography>
+                      </Box>
 
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography fontSize={13} fontWeight={700} color="#0F172A">{c.label}</Typography>
-                      <Typography fontSize={11} color="#94A3B8" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <TimeIcon fontSize="inherit" /> {fmtTime(t.created_at)}
-                      </Typography>
-                    </Box>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography fontSize={13} fontWeight={700} color="#0F172A" noWrap>{c.label}</Typography>
+                        <Typography fontSize={11} color="#94A3B8" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TimeIcon fontSize="inherit" /> {t.called_at ? fmtTime(t.called_at) : '—'}
+                        </Typography>
+                      </Box>
 
-                    <Button
-                      variant="contained" size="small"
-                      startIcon={acting === t.id ? <CircularProgress size={12} color="inherit" /> : <CallIcon />}
-                      onClick={() => handleCall(t)}
-                      disabled={!!acting}
-                      sx={{
-                        bgcolor: '#1B2A4A', fontWeight: 800, fontSize: 12,
-                        borderRadius: 2, whiteSpace: 'nowrap',
-                        '&:hover': { bgcolor: '#253A5E' },
-                      }}
-                    >
-                      Llamar
-                    </Button>
-                  </Box>
-                );
-              })}
-            </Stack>
-          )}
-        </CardContent>
-      </Card>
+                      <IconButton
+                        size="small"
+                        disabled={acting === t.id}
+                        onClick={() => handleRecallFromQueue(t)}
+                        sx={{ color: '#1B2A4A', '&:hover': { bgcolor: '#EFF6FF' } }}
+                      >
+                        {acting === t.id ? <CircularProgress size={16} /> : <RecallIcon fontSize="small" />}
+                      </IconButton>
+
+                      <IconButton
+                        size="small"
+                        disabled={acting === t.id}
+                        onClick={() => handleCancelFromQueue(t)}
+                        sx={{ color: '#F87171', '&:hover': { bgcolor: '#FEF2F2' } }}
+                      >
+                        {acting === t.id ? <CircularProgress size={16} /> : <CancelIcon fontSize="small" />}
+                      </IconButton>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 }
