@@ -208,7 +208,7 @@ export function KioskView() {
                   ¿Cuál es el motivo de su visita?
                 </h1>
                 <p style={{
-                  margin: '10px 0 0', color: 'rgba(255,255,255,0.45)',
+                  margin: '8px 0 0', color: 'rgba(255,255,255,0.6)',
                   fontSize: 'clamp(0.9rem, 1.5vw, 1rem)', fontWeight: 500,
                 }}>
                   Toque la opción correspondiente para generar su turno
@@ -226,31 +226,25 @@ export function KioskView() {
                       key={key}
                       onClick={() => select(key)}
                       style={{
-                        background: isPressed
-                          ? `rgba(255,255,255,0.12)`
-                          : 'rgba(255,255,255,0.06)',
-                        border: `1.5px solid ${isPressed ? c.accent : 'rgba(255,255,255,0.1)'}`,
-                        borderTop: `5px solid ${c.accent}`,
-                        borderRadius: 20,
-                        padding: '36px 24px',
+                        background: '#ffffff',
+                        border: isPressed ? `2px solid ${c.accent}` : '2px solid transparent',
+                        borderRadius: 16,
+                        padding: '32px 24px 28px',
                         cursor: 'pointer',
                         display: 'flex', flexDirection: 'column',
                         alignItems: 'center', textAlign: 'center',
                         gap: 16, width: '100%',
                         transform: isPressed ? 'scale(0.97)' : 'scale(1)',
                         transition: 'all 0.15s cubic-bezier(0.4,0,0.2,1)',
-                        boxShadow: isPressed
-                          ? `0 0 0 3px ${c.accent}55`
-                          : '0 4px 20px rgba(0,0,0,0.3)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                         WebkitTapHighlightColor: 'transparent',
                       }}
                     >
-                      {/* Ícono */}
+                      {/* Ícono con fondo pastel */}
                       <div style={{
                         width: 80, height: 80, borderRadius: 18,
                         background: c.light,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: `0 4px 16px ${c.accent}44`,
                       }}>
                         <Icon style={{ fontSize: 44, color: c.accent }} />
                       </div>
@@ -259,30 +253,18 @@ export function KioskView() {
                       <div>
                         <div style={{
                           fontSize: 'clamp(1rem, 1.8vw, 1.25rem)',
-                          fontWeight: 800, color: '#ffffff',
-                          letterSpacing: '-0.01em', marginBottom: 8,
+                          fontWeight: 800, color: '#0F172A',
+                          letterSpacing: '-0.01em', marginBottom: 6,
                         }}>
                           {c.label}
                         </div>
                         <div style={{
                           fontSize: 'clamp(0.75rem, 1.2vw, 0.875rem)',
-                          color: 'rgba(255,255,255,0.45)',
+                          color: '#475569',
                           lineHeight: 1.5, fontWeight: 400,
                         }}>
                           {c.desc}
                         </div>
-                      </div>
-
-                      {/* Badge prefijo */}
-                      <div style={{
-                        marginTop: 'auto',
-                        background: c.accent + '22',
-                        border: `1px solid ${c.accent}55`,
-                        borderRadius: 99, padding: '4px 14px',
-                        fontSize: 11, fontWeight: 800,
-                        color: c.accent, letterSpacing: '0.12em',
-                      }}>
-                        PREFIJO {key === 'ANALYSIS' ? 'A' : key === 'RESULTS' ? 'R' : 'P'}
                       </div>
                     </button>
                   );
