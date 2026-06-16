@@ -277,8 +277,8 @@ export function KioskView() {
         {/* CARGANDO */}
         {phase === 'loading' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
-            <CircularProgress size={80} thickness={3} sx={{ color: '#4ADE80' }} />
-            <div style={{ color: '#fff', fontSize: 22, fontWeight: 700 }}>
+            <CircularProgress size={80} thickness={3} sx={{ color: '#1B2A4A' }} />
+            <div style={{ color: '#ffffff', fontSize: 22, fontWeight: 700 }}>
               Generando su turno...
             </div>
           </div>
@@ -291,32 +291,32 @@ export function KioskView() {
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               textAlign: 'center', width: '100%', maxWidth: 520,
             }}>
-              {/* Check animado */}
+              {/* Check */}
               <div style={{
                 width: 80, height: 80, borderRadius: '50%',
-                background: '#16A34A22',
+                background: 'rgba(22,163,74,0.13)',
                 border: '2px solid #16A34A',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 20,
               }}>
-                <CheckIcon style={{ fontSize: 44, color: '#4ADE80' }} />
+                <CheckIcon style={{ fontSize: 44, color: '#16A34A' }} />
               </div>
 
-              <div style={{ color: '#4ADE80', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
+              <div style={{ color: '#16A34A', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
                 ¡Turno generado exitosamente!
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 28 }}>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, marginBottom: 28 }}>
                 Su número de atención es:
               </div>
 
-              {/* Número de turno — protagonista */}
+              {/* Número de turno — caja blanca sólida */}
               <div style={{
-                background: svc.light,
+                background: '#ffffff',
                 border: `3px solid ${svc.accent}`,
                 borderRadius: 24,
                 padding: '20px 60px',
                 marginBottom: 24,
-                boxShadow: `0 0 48px ${svc.accent}55`,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}>
                 <div style={{
                   fontSize: 'clamp(4rem, 12vw, 6rem)',
@@ -328,35 +328,34 @@ export function KioskView() {
                 </div>
               </div>
 
-              {/* Servicio */}
+              {/* Servicio — pill pastel sólido */}
               <div style={{
-                background: svc.accent + '22',
-                border: `1px solid ${svc.accent}55`,
+                background: svc.light,
                 borderRadius: 99, padding: '6px 20px',
                 fontSize: 13, fontWeight: 800,
-                color: svc.accent, letterSpacing: '0.1em',
+                color: svc.dark, letterSpacing: '0.1em',
                 textTransform: 'uppercase', marginBottom: 20,
               }}>
                 {getServiceTypeLabel(ticket.service_type)}
               </div>
 
               <div style={{
-                color: 'rgba(255,255,255,0.5)', fontSize: 14,
+                color: 'rgba(255,255,255,0.55)', fontSize: 14,
                 lineHeight: 1.6, marginBottom: 32,
               }}>
                 Retire su ticket impreso y aguarde en la<br />
                 sala de espera a ser llamado en la pantalla.
               </div>
 
-              {/* Botón volver con countdown */}
+              {/* Botón volver — navy sólido */}
               <button
                 onClick={reset}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.15)',
+                  background: '#1B2A4A',
+                  border: 'none',
                   borderRadius: 12, padding: '14px 28px',
-                  cursor: 'pointer', color: 'rgba(255,255,255,0.8)',
+                  cursor: 'pointer', color: '#ffffff',
                   fontSize: 15, fontWeight: 700,
                   WebkitTapHighlightColor: 'transparent',
                   transition: 'all 0.15s',
@@ -368,7 +367,7 @@ export function KioskView() {
                   variant="determinate"
                   value={(countdown / 8) * 100}
                   size={22} thickness={5}
-                  sx={{ color: svc.accent }}
+                  sx={{ color: '#ffffff' }}
                 />
               </button>
             </div>
