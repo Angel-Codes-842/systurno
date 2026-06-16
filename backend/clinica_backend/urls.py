@@ -38,9 +38,8 @@ urlpatterns = [
     path('assets/<path:path>', serve, {'document_root': os.path.join(FRONTEND_DIST)}),
 ]
 
-# Servir archivos de media
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Servir archivos de media (siempre, no solo en DEBUG)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Catch-all para el frontend SPA (React Router)
 urlpatterns += [

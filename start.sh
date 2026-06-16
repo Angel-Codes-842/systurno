@@ -60,6 +60,17 @@ fi
 
 echo -e "${GREEN}✅ Sistema verificado${NC}"
 
+# Build frontend si falta dist/ (para acceder via Django)
+if [ ! -f "frontend/dist/index.html" ]; then
+    echo -e "${YELLOW}📦 Compilando frontend para acceso por red...${NC}"
+    cd frontend && npm run build && cd ..
+    if [ -f "frontend/dist/index.html" ]; then
+        echo -e "${GREEN}✅ Frontend compilado${NC}"
+    else
+        echo -e "${RED}⚠️  No se pudo compilar, solo disponible via Vite :3000${NC}"
+    fi
+fi
+
 # Cleanup
 cleanup() {
     echo -e "\n${YELLOW}Deteniendo servicios...${NC}"
@@ -89,18 +100,22 @@ sleep 2
 
 echo -e "${GREEN}✅ Sistema iniciado${NC}"
 echo ""
-echo -e "URLs Red Local (Vite dev):"
-echo -e "  Kiosko:      ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/kiosk${NC}"
-echo -e "  Turnos:      ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/turnos${NC}"
-echo -e "  Sala Espera: ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/display${NC}"
+echo -e "==== ACCEDE DESDE ESTE EQUIPO ===="
+echo -e "  Vite (dev):   ${GREEN}http://localhost:${FRONTEND_PORT}/kiosk${NC}"
+echo -e "  Django:       ${GREEN}http://localhost:${BACKEND_PORT}/kiosk${NC}"
 echo ""
-echo -e "URLs Red Local (Django - produccion):"
+echo -e "==== ACCEDE DESDE OTRO EQUIPO ===="
+echo -e "  (usar puerto 8000, Django sirve todo incluido imagenes)"
 echo -e "  Kiosko:      ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/kiosk${NC}"
 echo -e "  Turnos:      ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/turnos${NC}"
-echo -e "  Sala Espera: ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/display${NC}"
+echo -e "  Display:     ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/display${NC}"
 echo ""
-echo -e "Kiosko con impresión silenciosa (Windows):"
-echo -e "  ${YELLOW}start-kiosko.bat ${LOCAL_IP} ${BACKEND_PORT}${NC}"
+echo -e "  Alternativa por Vite (puede no mostrar imagenes):"
+echo -e "  ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/kiosk${NC}"
+echo ""
+echo -e "Kiosko con impresión silenciosa:"
+echo -e "  ${YELLOW}start-kiosko.bat ${LOCAL_IP} ${BACKEND_PORT}${NC}  (Windows)"
+echo -e "  ${YELLOW}./start-kiosko.sh ${LOCAL_IP} ${BACKEND_PORT}${NC}   (Linux)"
 echo ""
 echo -e "${RED}Ctrl+C para detener${NC}"
 

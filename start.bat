@@ -1,11 +1,11 @@
 @echo off
-:: Sistema de Turnos - Inicio en modo desarrollo (Windows)
-:: Usa npm run dev (hot-reload). Para produccion usa deploy.bat
+:: Sistema de Turnos - Inicio (Windows)
+:: Inicia Django (API + frontend build) y Vite (hot-reload).
+:: Accede desde otros equipos via Django :8000 (media incluida).
 ::
-:: USO: start.bat [IP] (opcional, fuerza IP para las URLs)
+:: USO: start.bat [IP] (opcional, forza IP en las URLs)
 setlocal enabledelayedexpansion
 
-:: Posicionarse siempre en la carpeta del script
 cd /d "%~dp0"
 
 if not "%~1"=="" set SERVER_IP=%~1
@@ -33,13 +33,25 @@ if not exist "frontend\node_modules" (
 echo [OK] Sistema verificado
 echo.
 
+:: --- Build frontend si falta dist/ (para acceder via Django) ------------
+if not exist "frontend\dist\index.html" (
+    echo [*] Compilando frontend para acceso por red...
+    pushd frontend >nul 2>&1
+    call npm run build
+    popd >nul 2>&1
+    if exist "frontend\dist\index.html" (
+        echo [OK] Frontend compilado
+    ) else (
+        echo [!] No se pudo compilar, solo disponible via Vite :3000
+    )
+    echo.
+)
+
 :: --- Iniciar Backend ---------------------------------------------------
 echo [*] Iniciando Backend en puerto %BACKEND_PORT%...
 pushd backend >nul 2>&1
 start "Backend - Turnos" cmd /k "title Backend Turnos && venv\Scripts\python manage.py runserver 0.0.0.0:%BACKEND_PORT%"
 popd >nul 2>&1
-
-:: Esperar un momento para que el backend arranque
 timeout /t 3 /nobreak >nul
 
 :: --- Iniciar Frontend (modo dev) ----------------------------------------
@@ -47,43 +59,36 @@ echo [*] Iniciando Frontend en puerto %FRONTEND_PORT%...
 pushd frontend >nul 2>&1
 start "Frontend - Turnos" cmd /k "title Frontend Turnos && npm run dev -- --host 0.0.0.0 --port %FRONTEND_PORT%"
 popd >nul 2>&1
-
-:: Esperar que el frontend arranque
 timeout /t 5 /nobreak >nul
+
+:: --- Detectar IP -------------------------------------------------------
+if not defined SERVER_IP (
+    for /f "tokens=2 delims=:" %%I in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1"') do (
+        set "IP=%%I"
+        call :trim IP
+        if defined IP set "LOCAL_IP=!IP!"
+    )
+)
+if not defined LOCAL_IP set "LOCAL_IP=localhost"
 
 :: --- Resumen ------------------------------------------------------------
 echo.
-echo [OK] Sistema iniciado. Se abrieron 2 ventanas de consola.
+echo [OK] Sistema iniciado
 echo.
-echo --- URLs locales -----------------------------------------------------
-echo   Kiosko:      http://localhost:%FRONTEND_PORT%/kiosk
-echo   Recepcion:   http://localhost:%FRONTEND_PORT%/turnos
-echo   Sala Espera: http://localhost:%FRONTEND_PORT%/display
-echo ----------------------------------------------------------------------
+echo ==== ACCEDE DESDE ESTE EQUIPO ====
+echo   Vite (dev):   http://localhost:%FRONTEND_PORT%/kiosk
+echo   Django:       http://localhost:%BACKEND_PORT%/kiosk
 echo.
-echo --- URLs en red local ------------------------------------------------
-if defined SERVER_IP (
-    echo   Kiosko:      http://%SERVER_IP%:%FRONTEND_PORT%/kiosk
-    echo   Recepcion:   http://%SERVER_IP%:%FRONTEND_PORT%/turnos
-    echo   Sala Espera: http://%SERVER_IP%:%FRONTEND_PORT%/display
-) else (
-    set "FOUND_IP="
-    for /f "tokens=2 delims=:" %%I in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1" ^| findstr /v "169.254"') do (
-        set "IP=%%I"
-        call :trim IP
-        if defined IP (
-            echo   Kiosko:      http://!IP!:%FRONTEND_PORT%/kiosk
-            echo   Recepcion:   http://!IP!:%FRONTEND_PORT%/turnos
-            echo   Sala Espera: http://!IP!:%FRONTEND_PORT%/display
-            set "FOUND_IP=1"
-        )
-    )
-    if not defined FOUND_IP echo   (No se encontro direccion IPv4 local)
-)
-echo ----------------------------------------------------------------------
+echo ==== ACCEDE DESDE OTRO EQUIPO ====
+echo   (usar puerto 8000, Django sirve todo incluido imagenes)
+echo   Kiosko:      http://%LOCAL_IP%:%BACKEND_PORT%/kiosk
+echo   Turnos:      http://%LOCAL_IP%:%BACKEND_PORT%/turnos
+echo   Display:     http://%LOCAL_IP%:%BACKEND_PORT%/display
 echo.
-echo Cierra las ventanas "Backend Turnos" y "Frontend Turnos" para detener.
-echo Para produccion usa: deploy.bat
+echo   Alternativa por Vite (puede no mostrar imagenes):
+echo   http://%LOCAL_IP%:%FRONTEND_PORT%/kiosk
+echo.
+echo Cierra las 2 ventanas (Backend + Frontend) para detener.
 echo.
 pause
 goto :eof

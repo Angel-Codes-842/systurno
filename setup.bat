@@ -124,6 +124,15 @@ if errorlevel 1 (
 )
 
 echo [OK] Dependencias Node instaladas
+
+:: Build del frontend (para acceder desde otros equipos via Django :8000)
+echo [*] Compilando Frontend...
+call npm run build
+if errorlevel 1 (
+    echo [!] Fallo el build, pero podés usar Vite en modo dev con start.bat
+) else (
+    echo [OK] Frontend compilado
+)
 cd ..
 
 :: --- Resumen -----------------------------------------------------------------
@@ -133,12 +142,13 @@ echo |       OK  Instalacion Completada       |
 echo +========================================+
 echo.
 echo Proximos pasos:
-echo   Desarrollo:  start.bat
-echo   Produccion:  deploy.bat  ^(ejecutar como Administrador^)
+echo   Iniciar:      start.bat
 echo.
-echo URLs ^(una vez iniciado el sistema^):
-echo   Kiosko:      http://localhost:3000/kiosk
-echo   Recepcion:   http://localhost:3000/turnos
-echo   Sala Espera: http://localhost:3000/display
+echo URLs locales ^(una vez iniciado^):
+echo   Vite (dev):   http://localhost:3000/kiosk
+echo   Django (prod): http://localhost:8000/kiosk
 echo.
-pause
+echo URLs en red local:
+echo   http://MI_IP:8000/kiosk       ^(accede desde otros equipos^)
+echo   http://MI_IP:3000/kiosk       ^(solo si Vite esta activo^)
+echo.

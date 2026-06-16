@@ -207,6 +207,15 @@ fi
 
 echo -e "${GREEN}✅ Frontend configurado${NC}"
 
+# Build del frontend
+echo -e "${YELLOW}📦 Compilando Frontend...${NC}"
+npm run build
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ Frontend compilado${NC}"
+else
+    echo -e "${RED}⚠️  Fallo el build, usá ./start.sh para Vite${NC}"
+fi
+
 # Resumen
 cd ..
 echo ""
