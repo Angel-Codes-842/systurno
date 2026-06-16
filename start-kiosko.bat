@@ -1,19 +1,36 @@
 @echo off
-REM Kiosko con Impresion Silenciosa - Windows
-REM La IP del servidor se detecta automaticamente.
-REM Si quieres forzar una IP fija, descomenta la siguiente linea y edita el valor:
-REM set SERVER_IP=192.168.0.X
+REM -----------------------------------------------------------------------------
+REM  start-kiosko.bat
+REM  Abre Chrome (o Edge) en modo kiosko apuntando al totem de turnos.
+REM
+REM  USO:
+REM    start-kiosko.bat [IP] [puerto]
+REM      IP     - IP del servidor (opcional, detecta automaticamente)
+REM      puerto - Puerto (opcional, default 8000 si es produccion, 3000 si es dev)
+REM
+REM  EJEMPLOS:
+REM    start-kiosko.bat                    - auto detecta IP, puerto 8000 (produccion)
+REM    start-kiosko.bat 192.168.0.23       - forza IP, puerto 8000
+REM    start-kiosko.bat 192.168.0.23 3000  - forza IP y puerto 3000 (Vite dev)
+REM -----------------------------------------------------------------------------
 
-set PORT=3000
+set PORT=8000
+set ROUTE=/kiosk
 
-REM Detectar IP local automaticamente (primera IPv4 que no sea loopback ni APIPA)
-if not defined SERVER_IP (
-    for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1" ^| findstr /v "169.254"') do (
-        for /f "tokens=1" %%b in ("%%a") do (
-            if not defined SERVER_IP set SERVER_IP=%%b
+REM Usar IP pasada como argumento, sino detectar automaticamente
+if not "%1"=="" (
+    set SERVER_IP=%1
+) else (
+    if not defined SERVER_IP (
+        for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1" ^| findstr /v "169.254"') do (
+            for /f "tokens=1" %%b in ("%%a") do (
+                if not defined SERVER_IP set SERVER_IP=%%b
+            )
         )
     )
 )
+
+if not "%2"=="" set PORT=%2
 
 if not defined SERVER_IP (
     echo [ERROR] No se pudo detectar la IP del servidor.
@@ -22,14 +39,14 @@ if not defined SERVER_IP (
     exit /b 1
 )
 
-set URL=http://%SERVER_IP%:%PORT%/kiosko
-echo Conectando a: %URL%
+set URL=http://%SERVER_IP%:%PORT%%ROUTE%
+echo Abriendo kiosko en: %URL%
 
-REM Cerrar Chrome completamente antes de iniciar
+REM Cerrar instancias previas de Chrome
 taskkill /F /IM chrome.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 
-REM Buscar Chrome e iniciar en modo kiosko
+REM Buscar Chrome e iniciar en modo kiosko con impresion silenciosa
 if exist "C:\Program Files\Google\Chrome\Application\chrome.exe" (
     start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk --kiosk-printing %URL%
     exit
@@ -43,13 +60,18 @@ if exist "%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe" (
     exit
 )
 
-REM Edge como alternativa
+REM Edge como alternativa si no hay Chrome
 taskkill /F /IM msedge.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 if exist "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" (
     start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --kiosk --kiosk-printing %URL%
     exit
 )
+if exist "C:\Program Files\Microsoft\Edge\Application\msedge.exe" (
+    start "" "C:\Program Files\Microsoft\Edge\Application\msedge.exe" --kiosk --kiosk-printing %URL%
+    exit
+)
 
-echo Chrome no encontrado. Instala desde https://www.google.com/chrome/
+echo [ERROR] No se encontro Chrome ni Edge.
+echo Instala Chrome desde: https://www.google.com/chrome/
 pause

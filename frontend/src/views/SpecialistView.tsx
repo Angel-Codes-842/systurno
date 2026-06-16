@@ -208,6 +208,18 @@ function TurnosTab({ trigger }: { trigger: number }) {
     } finally { setActing(null); }
   }
 
+  async function handleAttendFromQueue(t: Ticket) {
+    setActing(t.id);
+    try {
+      await attendTicket(t.id);
+      enqueueSnackbar(`Turno ${t.ticket_number} atendido ✓`, { variant: 'success' });
+      setCalled(prev => prev?.id === t.id ? null : prev);
+      await refresh();
+    } catch (e: unknown) {
+      enqueueSnackbar((e as Error).message, { variant: 'error' });
+    } finally { setActing(null); }
+  }
+
   async function handleAttend() {
     if (!called) return;
     setActing(called.id);
@@ -540,6 +552,15 @@ function TurnosTab({ trigger }: { trigger: number }) {
                       <IconButton
                         size="small"
                         disabled={acting === t.id}
+                        onClick={() => handleAttendFromQueue(t)}
+                        sx={{ color: '#16A34A', '&:hover': { bgcolor: '#F0FDF4' } }}
+                      >
+                        {acting === t.id ? <CircularProgress size={16} /> : <AttendIcon fontSize="small" />}
+                      </IconButton>
+
+                      <IconButton
+                        size="small"
+                        disabled={acting === t.id}
                         onClick={() => handleRecallFromQueue(t)}
                         sx={{ color: '#1B2A4A', '&:hover': { bgcolor: '#EFF6FF' } }}
                       >
@@ -595,7 +616,7 @@ function SlidersTab({ trigger: _trigger }: { trigger: number }) {
     }
 
     const fd = new FormData();
-    fd.append(isVideo ? 'video_file' : 'image_file', file);
+    fd.append(isVideo ? 'video' : 'image', file);
     fd.append('title', file.name.replace(/\.[^.]+$/, ''));
     fd.append('media_type', isVideo ? 'VIDEO' : 'IMAGE');
     fd.append('is_active', 'true');

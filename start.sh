@@ -3,7 +3,7 @@ set -e
 
 # Posicionarse siempre en la raíz del proyecto
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 cd "$PROJECT_DIR"
 
 GREEN='\033[0;32m'
@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")
+LOCAL_IP="${1:-$(hostname -I 2>/dev/null | awk '{print $1}' || echo "localhost")}"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 
@@ -89,13 +89,18 @@ sleep 2
 
 echo -e "${GREEN}✅ Sistema iniciado${NC}"
 echo ""
-echo -e "URLs Red Local:"
-echo -e "  Kiosko:      ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/kiosko${NC}"
+echo -e "URLs Red Local (Vite dev):"
+echo -e "  Kiosko:      ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/kiosk${NC}"
 echo -e "  Turnos:      ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/turnos${NC}"
-echo -e "  Sala Espera: ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/sala-espera${NC}"
+echo -e "  Sala Espera: ${GREEN}http://${LOCAL_IP}:${FRONTEND_PORT}/display${NC}"
+echo ""
+echo -e "URLs Red Local (Django - produccion):"
+echo -e "  Kiosko:      ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/kiosk${NC}"
+echo -e "  Turnos:      ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/turnos${NC}"
+echo -e "  Sala Espera: ${GREEN}http://${LOCAL_IP}:${BACKEND_PORT}/display${NC}"
 echo ""
 echo -e "Kiosko con impresión silenciosa (Windows):"
-echo -e "  ${YELLOW}start-kiosko.bat${NC}"
+echo -e "  ${YELLOW}start-kiosko.bat ${LOCAL_IP} ${BACKEND_PORT}${NC}"
 echo ""
 echo -e "${RED}Ctrl+C para detener${NC}"
 

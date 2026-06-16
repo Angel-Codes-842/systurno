@@ -653,5 +653,5 @@ class SliderViewSet(viewsets.ModelViewSet):
         Endpoint: GET /api/sliders/active/
         """
         queryset = Slider.objects.filter(is_active=True).order_by('order', '-created_at')
-        serializer = SliderSerializer(queryset, many=True, context={'request': request})
+        serializer = SliderSerializer(queryset, many=True)
         return Response(serializer.data)

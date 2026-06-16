@@ -56,9 +56,9 @@ EOF
 
     echo ""
     echo -e "${GREEN}✅ Actualización de producción completada${NC}"
-    echo "   http://$SERVER_IP/kiosko"
+    echo "   http://$SERVER_IP/kiosk"
     echo "   http://$SERVER_IP/turnos"
-    echo "   http://$SERVER_IP/sala-espera"
+    echo "   http://$SERVER_IP/display"
     
 else
     # MODO DESARROLLO

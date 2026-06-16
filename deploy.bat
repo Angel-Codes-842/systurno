@@ -1,27 +1,30 @@
 @echo off
 :: Sistema de Turnos - Deploy Produccion (Windows)
-:: Requiere ejecutar como Administrador
+:: REVISADO: Django sirve frontend build + API en un solo puerto
+:: REQUIERE ejecutar como Administrador
 setlocal enabledelayedexpansion
 
-:: Posicionarse siempre en la carpeta del script sin importar desde dónde se ejecute
+:: Posicionarse siempre en la carpeta del script
 cd /d "%~dp0"
 
-set BACKEND_PORT=8000
-set FRONTEND_PORT=3000
+set APP_PORT=8000
+if not "%1"=="" set APP_PORT=%1
 
-:: Obtener IP local
-for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1" ^| findstr /v "169.254"') do (
-    for /f "tokens=1" %%b in ("%%a") do set LOCAL_IP=%%b
+:: Obtener IP local (primera IPv4 que no sea loopback ni APIPA)
+for /f "tokens=2 delims=:" %%I in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1"') do (
+    set "IP=%%I"
+    for /f "tokens=*" %%a in ("!IP!") do set LOCAL_IP=%%a
 )
 if not defined LOCAL_IP set LOCAL_IP=localhost
 
-echo ╔════════════════════════════════════════╗
-echo ║   Sistema de Turnos - Deploy Prod      ║
-echo ╚════════════════════════════════════════╝
-echo IP: %LOCAL_IP%
+echo ----------------------------------------
+echo ^|   Sistema de Turnos - Deploy Prod    ^|
+echo ----------------------------------------
+echo IP detectada: %LOCAL_IP%
+echo Puerto unico: %APP_PORT% (API + Frontend)
 echo.
 
-:: ─── Verificar herramientas ─────────────────────────────────────────────────
+:: --- Verificar herramientas --------------------------------------------------
 python --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python no encontrado. Ejecuta setup.bat primero.
@@ -33,7 +36,7 @@ if errorlevel 1 (
     pause & exit /b 1
 )
 
-:: ─── Backend ────────────────────────────────────────────────────────────────
+:: --- Backend -----------------------------------------------------------------
 echo [*] Configurando Backend para produccion...
 cd backend
 
@@ -59,7 +62,7 @@ if errorlevel 1 (
 :: Generar SECRET_KEY aleatoria
 for /f %%k in ('python -c "import secrets; print(secrets.token_urlsafe(50))"') do set SECRET_KEY=%%k
 
-:: Crear .env de produccion
+:: Crear .env de produccion (siempre se regenera en deploy)
 echo [*] Creando .env de produccion...
 (
     echo DEBUG=False
@@ -69,6 +72,7 @@ echo [*] Creando .env de produccion...
     echo USE_REDIS=False
     echo CORS_ALLOW_ALL_ORIGINS=True
 ) > .env
+echo [OK] .env creado con SECRET_KEY aleatoria
 
 :: Carpetas y migraciones
 if not exist "media\sliders" mkdir media\sliders
@@ -79,14 +83,18 @@ if errorlevel 1 (
     pause & exit /b 1
 )
 
+:: Colectar archivos estaticos si se usa whitenoise/static
+venv\Scripts\python manage.py collectstatic --noinput >nul 2>&1
+
 echo [OK] Backend configurado
 cd ..
 
-:: ─── Frontend - Build ───────────────────────────────────────────────────────
+:: --- Frontend - Build --------------------------------------------------------
 echo.
-echo [*] Compilando Frontend...
+echo [*] Compilando Frontend para produccion...
 cd frontend
 
+:: Instalar dependencias si faltan
 if not exist "node_modules" (
     echo [*] Instalando dependencias de Node.js...
     call npm install
@@ -96,6 +104,7 @@ if not exist "node_modules" (
     )
 )
 
+:: Siempre hacer build fresco en deploy
 call npm run build
 if errorlevel 1 (
     echo [ERROR] Fallo el build del frontend.
@@ -105,82 +114,54 @@ if errorlevel 1 (
 echo [OK] Frontend compilado ^(dist/^)
 cd ..
 
-:: ─── Servicios con Task Scheduler (nativo Windows) ─────────────────────────
+:: --- Registrar Tarea en Programador de Windows --------------------------------
 echo.
-echo [*] Registrando tareas en el Programador de tareas de Windows...
+echo [*] Registrando tarea en el Programador de tareas de Windows...
 set PROJ_DIR=%CD%
 
-:: Instalar servidor estatico para el frontend
-where serve >nul 2>&1
-if errorlevel 1 (
-    echo [*] Instalando servidor estatico ^(serve^)...
-    call npm install -g serve
-)
-
-:: Eliminar tareas anteriores si existen
-schtasks /delete /tn "TurnosBackend" /f >nul 2>&1
-schtasks /delete /tn "TurnosFrontend" /f >nul 2>&1
-
-:: Crear scripts de arranque auxiliares
-echo [*] Creando scripts de arranque...
+:: Crear script de arranque unico (Django sirve API + Frontend)
 (
     echo @echo off
     echo cd /d "%PROJ_DIR%\backend"
-    echo venv\Scripts\python manage.py runserver 0.0.0.0:%BACKEND_PORT% >> "%PROJ_DIR%\backend.log" 2^>^&1
-) > "%PROJ_DIR%\_run_backend.bat"
+    echo venv\Scripts\python manage.py runserver 0.0.0.0:%APP_PORT% >> "%PROJ_DIR%\systurno.log" 2^>^&1
+) > "%PROJ_DIR%\_run_systurno.bat"
 
-for /f %%p in ('where serve') do set SERVE_PATH=%%p
-(
-    echo @echo off
-    echo cd /d "%PROJ_DIR%\frontend"
-    echo "%SERVE_PATH%" -s dist -l %FRONTEND_PORT% >> "%PROJ_DIR%\frontend.log" 2^>^&1
-) > "%PROJ_DIR%\_run_frontend.bat"
+:: Eliminar tareas anteriores si existen
+schtasks /delete /tn "SisTurnos" /f >nul 2>&1
 
-:: Registrar tarea Backend - arranca al iniciar sesion
-schtasks /create /tn "TurnosBackend" ^
-    /tr "\"%PROJ_DIR%\_run_backend.bat\"" ^
+:: Registrar tarea unica - arranca al iniciar sesion (10s de delay)
+schtasks /create /tn "SisTurnos" ^
+    /tr "\"%PROJ_DIR%\_run_systurno.bat\"" ^
     /sc onlogon /delay 0000:10 ^
     /ru "%USERNAME%" /rl highest /f
 if errorlevel 1 (
-    echo [ERROR] No se pudo registrar la tarea TurnosBackend.
+    echo [ERROR] No se pudo registrar la tarea.
     echo         Intenta ejecutar deploy.bat como Administrador.
     pause & exit /b 1
 )
 
-:: Registrar tarea Frontend - arranca al iniciar sesion
-schtasks /create /tn "TurnosFrontend" ^
-    /tr "\"%PROJ_DIR%\_run_frontend.bat\"" ^
-    /sc onlogon /delay 0000:15 ^
-    /ru "%USERNAME%" /rl highest /f
-if errorlevel 1 (
-    echo [ERROR] No se pudo registrar la tarea TurnosFrontend.
-    pause & exit /b 1
-)
-
 :: Iniciar ahora sin esperar reinicio
-echo [*] Iniciando servicios...
-schtasks /run /tn "TurnosBackend" >nul
-timeout /t 4 /nobreak >nul
-schtasks /run /tn "TurnosFrontend" >nul
+echo [*] Iniciando servicio ahora...
+schtasks /run /tn "SisTurnos" >nul
+timeout /t 5 /nobreak >nul
 
-echo [OK] Tareas registradas e iniciadas
+echo [OK] Tarea registrada e iniciada
 
 echo.
-echo ╔════════════════════════════════════════╗
-echo ║        OK  Deploy Completado           ║
-echo ╚════════════════════════════════════════╝
+echo +========================================+
+echo |        OK  Deploy Completado           |
+echo +========================================+
 echo.
-echo URLs:
-echo   Kiosko:      http://%LOCAL_IP%:%FRONTEND_PORT%/kiosko
-echo   Turnos:      http://%LOCAL_IP%:%FRONTEND_PORT%/turnos
-echo   Sala Espera: http://%LOCAL_IP%:%FRONTEND_PORT%/sala-espera
+echo URLs del sistema (puerto unico %APP_PORT%):
+echo   Kiosko:      http://%LOCAL_IP%:%APP_PORT%/kiosk
+echo   Recepcion:   http://%LOCAL_IP%:%APP_PORT%/turnos
+echo   Sala Espera: http://%LOCAL_IP%:%APP_PORT%/display
 echo.
-echo Los servicios arrancan automaticamente al iniciar sesion en Windows.
+echo El servicio arranca automaticamente al iniciar sesion en Windows.
 echo.
 echo Comandos utiles:
-echo   Ver tareas:   schtasks /query /tn "TurnosBackend"
-echo   Iniciar:      schtasks /run /tn "TurnosBackend"
-echo   Detener:      taskkill /f /im python.exe ^& taskkill /f /im node.exe
-echo   Logs:         backend.log  /  frontend.log
+echo   Ver estado:   schtasks /query /tn "SisTurnos"
+echo   Reiniciar:    schtasks /run /tn "SisTurnos"
+echo   Detener:      taskkill /f /im python.exe
+echo   Log:          %PROJ_DIR%\systurno.log
 echo.
-pause

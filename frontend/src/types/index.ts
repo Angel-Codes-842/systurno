@@ -1,32 +1,33 @@
-// Estados de ticket
-export type TicketStatus = 'WAITING' | 'CALLED' | 'ATTENDED'
+export type ServiceType = 'RESULTS' | 'ANALYSIS' | 'BUDGET';
+export type TicketStatus = 'WAITING' | 'CALLED' | 'ATTENDED' | 'CANCELED';
 
-// Ticket simple
 export interface Ticket {
-  id: number
-  ticket_number: string
-  status: TicketStatus
-  status_display?: string
-  service_type?: 'ANALYSIS' | 'RESULTS' | 'BUDGET'
-  service_type_display?: string
-  created_at: string
-  called_at?: string
-  attended_at?: string
+  id: number;
+  ticket_number: string;
+  status: TicketStatus;
+  service_type: ServiceType;
+  created_at: string;
+  called_at: string | null;
+  attended_at: string | null;
+  status_display: string;
+  service_type_display: string;
 }
 
-// Eventos WebSocket
-export interface WSTicketCalledEvent {
-  type: 'ticket_called'
-  ticket: Ticket
+export interface Slider {
+  id: number;
+  title: string;
+  media_type: 'IMAGE' | 'VIDEO';
+  image_url: string | null;
+  video_url: string | null;
+  duration: number;
+  order: number;
+  is_active: boolean;
 }
 
-export interface WSNewTicketEvent {
-  type: 'new_ticket'
-  ticket: Ticket
+export interface TicketStats {
+  total: number;
+  waiting: number;
+  called: number;
+  attended: number;
+  canceled: number;
 }
-
-export interface WSSliderUpdateEvent {
-  type: 'slider_update'
-}
-
-export type WSEvent = WSTicketCalledEvent | WSNewTicketEvent | WSSliderUpdateEvent

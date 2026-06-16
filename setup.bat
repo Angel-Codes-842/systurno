@@ -1,16 +1,16 @@
 @echo off
-:: Sistema de Turnos - Instalación Completa (Windows)
+:: Sistema de Turnos - Instalaci?n Completa (Windows)
 setlocal enabledelayedexpansion
 
 :: Posicionarse siempre en la carpeta del script
 cd /d "%~dp0"
 
-echo ╔════════════════════════════════════════╗
-echo ║    Sistema de Turnos - Instalación     ║
-echo ╚════════════════════════════════════════╝
+echo ------------------------------------------
+echo ^|    Sistema de Turnos - Instalacion     ^|
+echo ------------------------------------------
 echo.
 
-:: ─── Verificar Python ───────────────────────────────────────────────────────
+:: --- Verificar Python --------------------------------------------------------
 python --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python no encontrado.
@@ -22,7 +22,7 @@ if errorlevel 1 (
 for /f "tokens=2" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
 echo [OK] Python %PY_VER%
 
-:: ─── Verificar Node.js ──────────────────────────────────────────────────────
+:: --- Verificar Node.js -------------------------------------------------------
 node --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Node.js no encontrado.
@@ -36,7 +36,7 @@ echo [OK] Node.js %NODE_VER%
 for /f %%v in ('npm --version 2^>^&1') do set NPM_VER=%%v
 echo [OK] npm %NPM_VER%
 
-:: ─── Backend ────────────────────────────────────────────────────────────────
+:: --- Backend -----------------------------------------------------------------
 echo.
 echo [*] Configurando Backend...
 cd backend
@@ -72,7 +72,7 @@ if errorlevel 1 (
 
 :: Crear .env si no existe
 if not exist ".env" (
-    echo [*] Creando archivo .env...
+    echo [*] Creando archivo .env de desarrollo...
     (
         echo DEBUG=True
         echo SECRET_KEY=django-insecure-dev-key-change-in-production
@@ -81,10 +81,14 @@ if not exist ".env" (
         echo USE_REDIS=False
         echo CORS_ALLOW_ALL_ORIGINS=True
     ) > .env
+    echo [OK] .env creado
+) else (
+    echo [OK] .env ya existe ^(no modificado^)
 )
 
 :: Crear carpetas necesarias
 if not exist "media\sliders" mkdir media\sliders
+echo [OK] Carpeta media\sliders lista
 
 :: Migraciones
 echo [*] Aplicando migraciones...
@@ -99,7 +103,7 @@ if errorlevel 1 (
 echo [OK] Backend configurado
 cd ..
 
-:: ─── Frontend ───────────────────────────────────────────────────────────────
+:: --- Frontend ----------------------------------------------------------------
 echo.
 echo [*] Configurando Frontend...
 cd frontend
@@ -114,29 +118,27 @@ if errorlevel 1 (
     call npm install
     if errorlevel 1 (
         echo [ERROR] No se pudieron instalar las dependencias de npm.
-        echo Soluciones manuales:
-        echo   1. rmdir /s /q node_modules
-        echo   2. del package-lock.json
-        echo   3. npm install
         pause
         exit /b 1
     )
 )
 
-echo [OK] Frontend configurado
+echo [OK] Dependencias Node instaladas
 cd ..
 
-:: ─── Resumen ────────────────────────────────────────────────────────────────
+:: --- Resumen -----------------------------------------------------------------
 echo.
-echo ╔════════════════════════════════════════╗
-echo ║       OK  Instalacion Completada       ║
-echo ╚════════════════════════════════════════╝
+echo +========================================+
+echo |       OK  Instalacion Completada       |
+echo +========================================+
 echo.
-echo Para iniciar: start.bat  (o ejecuta start.sh en Git Bash)
+echo Proximos pasos:
+echo   Desarrollo:  start.bat
+echo   Produccion:  deploy.bat  ^(ejecutar como Administrador^)
 echo.
-echo URLs:
-echo   Kiosko:      http://localhost:3000/kiosko
-echo   Turnos:      http://localhost:3000/turnos
-echo   Sala Espera: http://localhost:3000/sala-espera
+echo URLs ^(una vez iniciado el sistema^):
+echo   Kiosko:      http://localhost:3000/kiosk
+echo   Recepcion:   http://localhost:3000/turnos
+echo   Sala Espera: http://localhost:3000/display
 echo.
 pause

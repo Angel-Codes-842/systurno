@@ -4,7 +4,7 @@ set -e
 
 # Posicionarse siempre en la raíz del proyecto
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 cd "$PROJECT_DIR"
 
 GREEN='\033[0;32m'
@@ -217,7 +217,7 @@ echo ""
 echo -e "${YELLOW}🚀 Para iniciar:${NC} ${GREEN}./start.sh${NC}"
 echo ""
 echo -e "${YELLOW}🌐 URLs:${NC}"
-echo "   Kiosko:      http://localhost:3000/kiosko"
+echo "   Kiosko:      http://localhost:3000/kiosk"
 echo "   Turnos:      http://localhost:3000/turnos"
 echo "   Sala Espera: http://localhost:3000/sala-espera"
 echo ""
