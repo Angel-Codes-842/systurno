@@ -22,6 +22,7 @@ export interface Slider {
   duration: number;
   order: number;
   is_active: boolean;
+  has_sound: boolean;
 }
 
 export interface TicketStats {

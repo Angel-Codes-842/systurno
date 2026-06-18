@@ -206,7 +206,7 @@ class SliderSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'media_type', 'media_type_display', 
             'image', 'image_url', 'video', 'video_url', 
-            'duration', 'order', 'is_active', 'created_at', 'updated_at'
+            'duration', 'order', 'is_active', 'has_sound', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
     

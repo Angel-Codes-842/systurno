@@ -364,6 +364,11 @@ class Slider(models.Model):
         default=True,
         verbose_name='Activo'
     )
+    has_sound = models.BooleanField(
+        default=True,
+        verbose_name='Con sonido',
+        help_text='Indica si el video se reproducirá con sonido'
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Fecha de creación'

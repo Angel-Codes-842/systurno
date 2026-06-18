@@ -34,10 +34,13 @@ export async function getWaitingTickets(): Promise<Ticket[]> {
 }
 
 export async function getCalledTickets(): Promise<Ticket[]> {
-  const response = await api.get<{ count: number; results: Ticket[] }>('/api/tickets/', {
-    params: { status: 'CALLED', today: true },
-  });
-  return response.data.results;
+  const response = await api.get<Ticket[]>('/api/tickets/called/');
+  return response.data;
+}
+
+export async function getAttendedTickets(): Promise<Ticket[]> {
+  const response = await api.get<Ticket[]>('/api/tickets/attended/');
+  return response.data;
 }
 
 export async function callTicket(id: number): Promise<Ticket> {
@@ -80,6 +83,11 @@ export async function uploadSlider(formData: FormData): Promise<Slider> {
   const response = await api.post<Slider>('/api/sliders/', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return response.data;
+}
+
+export async function updateSlider(id: number, data: Partial<Slider>): Promise<Slider> {
+  const response = await api.patch<Slider>(`/api/sliders/${id}/`, data);
   return response.data;
 }
 

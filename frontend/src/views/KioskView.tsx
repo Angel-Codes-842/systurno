@@ -57,10 +57,14 @@ function useClock() {
   useEffect(() => {
     const tick = () => {
       const n = new Date();
+      const weekday = n.toLocaleDateString('es-AR', { weekday: 'long' });
+      const day = n.getDate();
+      const month = n.toLocaleDateString('es-AR', { month: 'long' });
+      const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+      const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
       set({
-        date: n.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-              .replace(/^\w/, c => c.toUpperCase()),
-        time: `${pad(n.getHours())}:${pad(n.getMinutes())}`,
+        date: `${capWeekday}, ${day} De ${capMonth}`,
+        time: `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`,
       });
     };
     tick();
@@ -133,11 +137,15 @@ export function KioskView() {
       {/* Video de fondo — turnero.mp4 */}
       <video
         autoPlay loop muted playsInline
+        disablePictureInPicture
+        disableRemotePlayback
+        controlsList="nodownload nofullscreen noremoteplayback"
         style={{
           position: 'absolute', inset: 0,
           width: '100%', height: '100%',
           objectFit: 'cover',
           zIndex: 0,
+          pointerEvents: 'none',
         }}
       >
         <source src="/sliders/turnero.mp4" type="video/mp4" />
@@ -169,33 +177,44 @@ export function KioskView() {
             style={{ height: 46, objectFit: 'contain', display: 'block' }} />
         </div>
 
-        {/* Fecha + Hora — píldora como DisplayView */}
+        {/* Fecha + Hora — píldora (estilo cápsulas superpuestas) */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 12,
-          backgroundColor: 'rgba(15,23,42,0.75)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          backgroundColor: '#ffffff',
           borderRadius: 9999,
-          padding: '9px 22px',
-          whiteSpace: 'nowrap', flexShrink: 0,
-          border: '1px solid rgba(255,255,255,0.12)',
+          border: '1.5px solid #CBD5E1',
+          padding: '3px',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         }}>
-          <span style={{
-            fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.7)',
-            textTransform: 'capitalize',
+          {/* Cápsula de Fecha (Izquierda) */}
+          <div style={{
+            backgroundColor: '#1B2A4A',
+            color: '#ffffff',
+            borderRadius: 9999,
+            padding: '6px 18px',
+            fontSize: 14,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
           }}>
             {date}
-          </span>
-          <span style={{
-            display: 'inline-block', width: 1, height: 16,
-            backgroundColor: 'rgba(255,255,255,0.35)',
-          }} />
-          <span style={{
-            fontSize: 16, fontWeight: 800, color: '#ffffff',
-            letterSpacing: '0.05em', fontVariantNumeric: 'tabular-nums',
+          </div>
+          {/* Texto de Hora (Derecha) */}
+          <div style={{
+            color: '#1B2A4A',
+            padding: '0 18px 0 14px',
+            fontSize: 16,
+            fontWeight: 800,
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '0.02em',
+            display: 'flex',
+            alignItems: 'center',
           }}>
             {time}
-          </span>
+          </div>
         </div>
       </header>
 

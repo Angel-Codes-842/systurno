@@ -76,17 +76,14 @@ echo.
 echo [OK] Sistema iniciado
 echo.
 echo ==== ACCEDE DESDE ESTE EQUIPO ====
-echo   Vite (dev):   http://localhost:%FRONTEND_PORT%/kiosk
-echo   Django:       http://localhost:%BACKEND_PORT%/kiosk
+echo   Kiosko:      http://localhost:%FRONTEND_PORT%/kiosk
+echo   Turnos:      http://localhost:%FRONTEND_PORT%/turnos
+echo   Display:     http://localhost:%FRONTEND_PORT%/display
 echo.
 echo ==== ACCEDE DESDE OTRO EQUIPO ====
-echo   (usar puerto 8000, Django sirve todo incluido imagenes)
-echo   Kiosko:      http://%LOCAL_IP%:%BACKEND_PORT%/kiosk
-echo   Turnos:      http://%LOCAL_IP%:%BACKEND_PORT%/turnos
-echo   Display:     http://%LOCAL_IP%:%BACKEND_PORT%/display
-echo.
-echo   Alternativa por Vite (puede no mostrar imagenes):
-echo   http://%LOCAL_IP%:%FRONTEND_PORT%/kiosk
+echo   Kiosko:      http://%LOCAL_IP%:%FRONTEND_PORT%/kiosk
+echo   Turnos:      http://%LOCAL_IP%:%FRONTEND_PORT%/turnos
+echo   Display:     http://%LOCAL_IP%:%FRONTEND_PORT%/display
 echo.
 echo Cierra las 2 ventanas (Backend + Frontend) para detener.
 echo.

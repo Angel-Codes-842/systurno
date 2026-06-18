@@ -39,7 +39,9 @@ urlpatterns = [
 ]
 
 # Servir archivos de media (siempre, no solo en DEBUG)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
 
 # Catch-all para el frontend SPA (React Router)
 urlpatterns += [

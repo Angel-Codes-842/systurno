@@ -410,7 +410,6 @@ class TicketViewSet(viewsets.ModelViewSet):
         return [permissions.AllowAny()]
     
     def get_queryset(self):
-        from django.db.models import Case, When, Value, IntegerField
         queryset = Ticket.objects.all()
         
         # Filtros opcionales
@@ -421,10 +420,12 @@ class TicketViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status=status_filter)
         
         if today_only:
-            queryset = queryset.filter(created_at__date=timezone.now().date())
+            today_start, today_end = get_today_time_range()
+            queryset = queryset.filter(created_at__gte=today_start, created_at__lt=today_end)
         
         # Ordenamiento según estado
         if status_filter == 'WAITING':
+            from django.db.models import Case, When, Value, IntegerField
             # Prioridad: 1. Retirar Resultados, 2. Presupuesto, 3. Realizar Análisis
             queryset = queryset.annotate(
                 priority=Case(
@@ -498,6 +499,10 @@ class TicketViewSet(viewsets.ModelViewSet):
             )
         
         ticket.mark_as_attended()
+        
+        # Notificar via WebSocket que el estado del ticket cambió
+        notify_ticket_called(ticket)
+        
         serializer = TicketSerializer(ticket)
         return Response(serializer.data)
         
@@ -514,6 +519,10 @@ class TicketViewSet(viewsets.ModelViewSet):
                 {'error': 'Solo se pueden re-llamar tickets que ya están llamados.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # Actualizar la hora de llamado para que se ordene arriba en el display e historial
+        ticket.called_at = timezone.now()
+        ticket.save()
         
         # Al volver a notificar, se ejecuta el campanazo y el flash de TV
         notify_ticket_called(ticket)
@@ -536,6 +545,10 @@ class TicketViewSet(viewsets.ModelViewSet):
             )
         
         ticket.mark_as_canceled()
+        
+        # Notificar via WebSocket que el estado del ticket cambió
+        notify_ticket_called(ticket)
+        
         serializer = TicketSerializer(ticket)
         return Response(serializer.data)
     
@@ -545,13 +558,53 @@ class TicketViewSet(viewsets.ModelViewSet):
         Obtener tickets en espera del día.
         Endpoint: GET /api/tickets/waiting/
         """
+        from django.db.models import Case, When, Value, IntegerField
         today_start, today_end = get_today_time_range()
         
         queryset = Ticket.objects.filter(
             status='WAITING',
             created_at__gte=today_start,
             created_at__lt=today_end
-        ).order_by('created_at')
+        ).annotate(
+            priority=Case(
+                When(service_type='RESULTS', then=Value(1)),
+                When(service_type='BUDGET', then=Value(2)),
+                When(service_type='ANALYSIS', then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
+        ).order_by('priority', 'created_at')
+        serializer = TicketSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def called(self, request):
+        """
+        Obtener tickets llamados del día (incluyendo atendidos o cancelados).
+        Endpoint: GET /api/tickets/called/
+        """
+        today_start, today_end = get_today_time_range()
+        
+        queryset = Ticket.objects.filter(
+            called_at__gte=today_start,
+            called_at__lt=today_end
+        ).order_by('-called_at')
+        serializer = TicketSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def attended(self, request):
+        """
+        Obtener tickets atendidos del día.
+        Endpoint: GET /api/tickets/attended/
+        """
+        today_start, today_end = get_today_time_range()
+        
+        queryset = Ticket.objects.filter(
+            status='ATTENDED',
+            created_at__gte=today_start,
+            created_at__lt=today_end
+        ).order_by('-attended_at')
         serializer = TicketSerializer(queryset, many=True)
         return Response(serializer.data)
     

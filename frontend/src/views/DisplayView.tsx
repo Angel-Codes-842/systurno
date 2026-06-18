@@ -23,7 +23,7 @@
  *  └─────────────────────────────────────────────────────────────┘
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { getActiveSliders, getCalledTickets, getTTS } from '@/services/api';
 import type { Slider, Ticket } from '@/types';
@@ -44,9 +44,13 @@ function useClock() {
   useEffect(() => {
     const tick = () => {
       const n = new Date();
+      const weekday = n.toLocaleDateString('es-AR', { weekday: 'long' });
+      const day = n.getDate();
+      const month = n.toLocaleDateString('es-AR', { month: 'long' });
+      const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+      const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
       set({
-        date: n.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-              .replace(/^\w/, c => c.toUpperCase()),
+        date: `${capWeekday}, ${day} De ${capMonth}`,
         time: `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`,
       });
     };
@@ -98,6 +102,7 @@ function speakTTS(text: string, getTTSUrl: (t: string) => string): Promise<void>
 async function announceTicket(ticketNumber: string) {
   if (announceTicket._busy) return;       // ya hay un anuncio en curso
   announceTicket._busy = true;
+  window.dispatchEvent(new CustomEvent('ticket-announcement-start'));
   try {
     const phrase = `Turno ${ticketNumber}, por favor pase a recepción`;
     playDing();
@@ -107,6 +112,7 @@ async function announceTicket(ticketNumber: string) {
     await speakTTS(phrase, getTTS);
   } finally {
     announceTicket._busy = false;
+    window.dispatchEvent(new CustomEvent('ticket-announcement-end'));
   }
 }
 announceTicket._busy = false;
@@ -118,12 +124,50 @@ export function DisplayView() {
   const [sliders, setSliders] = useState<Slider[]>([]);
   const [idx,     setIdx]     = useState(0);
   const { date, time } = useClock();
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const handleStart = () => setIsAnnouncing(true);
+    const handleEnd = () => setIsAnnouncing(false);
+
+    window.addEventListener('ticket-announcement-start', handleStart);
+    window.addEventListener('ticket-announcement-end', handleEnd);
+
+    return () => {
+      window.removeEventListener('ticket-announcement-start', handleStart);
+      window.removeEventListener('ticket-announcement-end', handleEnd);
+    };
+  }, []);
+
+  // Controlar volumen del video dinámicamente al iniciar/finalizar el anuncio
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = isAnnouncing ? 0.1 : 1.0;
+    }
+  }, [isAnnouncing]);
+
+  const handleVideoLoad = (el: HTMLVideoElement | null) => {
+    if (el) {
+      videoRef.current = el;
+      el.volume = isAnnouncing ? 0.1 : 1.0;
+    }
+  };
 
   /* WebSocket: escucha llamados y actualizaciones de slider */
   useWebSocket(WS_URL, {
     onTicketCalled: (t) => {
-      setTickets(cur => [t, ...cur.filter(x => x.id !== t.id)].slice(0, 6));
-      announceTicket(t.ticket_number);
+      setTickets(cur => {
+        const exists = cur.some(x => x.id === t.id);
+        if (exists) {
+          return cur.map(x => x.id === t.id ? t : x);
+        } else {
+          return [t, ...cur.filter(x => x.id !== t.id)].slice(0, 6);
+        }
+      });
+      if (t.status === 'CALLED') {
+        announceTicket(t.ticket_number);
+      }
     },
     onSliderUpdate: fetchSliders,
   });
@@ -181,11 +225,15 @@ export function DisplayView() {
       {/* ════ VIDEO DE FONDO — turnero.mp4 full screen ════════════ */}
       <video
         autoPlay loop muted playsInline
+        disablePictureInPicture
+        disableRemotePlayback
+        controlsList="nodownload nofullscreen noremoteplayback"
         style={{
           position: 'absolute', inset: 0,
           width: '100%', height: '100%',
           objectFit: 'cover',
           zIndex: 0,
+          pointerEvents: 'none',
         }}
       >
         <source src="/sliders/turnero.mp4" type="video/mp4" />
@@ -207,34 +255,54 @@ export function DisplayView() {
 
         {/* ── HEADER TRANSPARENTE ─────────────────────────────── */}
         <header style={{
-          flexShrink: 0, height: 72,
+          flexShrink: 0, height: 96,
           background: 'transparent',
           display: 'flex', alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 28px',
+          padding: '0 36px',
         }}>
-          {/* Píldora fecha | hora */}
+          {/* Píldora fecha | hora (estilo cápsulas superpuestas) */}
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 12,
-            backgroundColor: 'rgba(15,23,42,0.75)',
-            backdropFilter: 'blur(8px)',
-            color: '#fff',
+            display: 'inline-flex',
+            alignItems: 'center',
+            backgroundColor: '#ffffff',
             borderRadius: 9999,
-            padding: '9px 22px',
-            whiteSpace: 'nowrap', flexShrink: 0,
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '2px solid #CBD5E1',
+            padding: '5px',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+            boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
           }}>
-            <span style={{ fontSize: 14, fontWeight: 600, textTransform: 'capitalize' }}>
+            {/* Cápsula de Fecha (Izquierda) */}
+            <div style={{
+              backgroundColor: '#1B2A4A',
+              color: '#ffffff',
+              borderRadius: 9999,
+              padding: '10px 24px',
+              fontSize: 22,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+            }}>
               {date}
-            </span>
-            <span style={{ display: 'inline-block', width: 1, height: 16, backgroundColor: 'rgba(255,255,255,0.35)' }} />
-            <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.05em', fontVariantNumeric: 'tabular-nums' }}>
+            </div>
+            {/* Texto de Hora (Derecha) */}
+            <div style={{
+              color: '#1B2A4A',
+              padding: '0 24px 0 18px',
+              fontSize: 26,
+              fontWeight: 800,
+              fontVariantNumeric: 'tabular-nums',
+              letterSpacing: '0.02em',
+              display: 'flex',
+              alignItems: 'center',
+            }}>
               {time}
-            </span>
+            </div>
           </div>
 
           {/* Logo Biogenic */}
-          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 68, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.35))' }} />
+          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 78, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
         </header>
 
         {/* ── CUERPO ──────────────────────────────────────────── */}
@@ -393,6 +461,7 @@ export function DisplayView() {
                 borderRadius: 16, overflow: 'hidden',
                 border: '1px solid rgba(255,255,255,0.15)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
               }}>
                 {slide.media_type === 'IMAGE'
                   ? <img
@@ -403,9 +472,15 @@ export function DisplayView() {
                     />
                   : <video
                       key={slide.id}
-                      autoPlay muted playsInline
+                      ref={handleVideoLoad}
+                      autoPlay
+                      muted={!slide.has_sound}
+                      playsInline
+                      disablePictureInPicture
+                      disableRemotePlayback
+                      controlsList="nodownload nofullscreen noremoteplayback"
                       onEnded={() => setIdx(p => (p + 1) % sliders.length)}
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
                     >
                       <source src={slide.video_url ?? ''} type="video/mp4" />
                     </video>
@@ -422,7 +497,10 @@ export function DisplayView() {
               }}>
                 <video
                   autoPlay loop muted playsInline
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  disablePictureInPicture
+                  disableRemotePlayback
+                  controlsList="nodownload nofullscreen noremoteplayback"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
                 >
                   <source src="/sliders/turnero.mp4" type="video/mp4" />
                 </video>

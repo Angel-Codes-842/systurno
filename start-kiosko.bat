@@ -1,42 +1,70 @@
 @echo off
+setlocal enabledelayedexpansion
+
 REM -----------------------------------------------------------------------------
 REM  start-kiosko.bat
 REM  Abre Chrome (o Edge) en modo kiosko apuntando al totem de turnos.
-REM
-REM  USO:
-REM    start-kiosko.bat [IP] [puerto]
-REM      IP     - IP del servidor (opcional, detecta automaticamente)
-REM      puerto - Puerto (opcional, default 8000 si es produccion, 3000 si es dev)
-REM
-REM  EJEMPLOS:
-REM    start-kiosko.bat                    - auto detecta IP, puerto 8000 (produccion)
-REM    start-kiosko.bat 192.168.0.23       - forza IP, puerto 8000
-REM    start-kiosko.bat 192.168.0.23 3000  - forza IP y puerto 3000 (Vite dev)
 REM -----------------------------------------------------------------------------
 
-set PORT=8000
 set ROUTE=/kiosk
+set CONFIG_FILE=kiosk-config.bat
 
-REM Usar IP pasada como argumento, sino detectar automaticamente
+:: 1. Comprobar si se pasaron argumentos (tienen prioridad para pruebas)
 if not "%1"=="" (
     set SERVER_IP=%1
+    if not "%2"=="" (
+        set PORT=%2
+    ) else (
+        set PORT=3000
+    )
+    echo [INFO] Usando valores pasados por linea de comandos.
 ) else (
-    if not defined SERVER_IP (
-        for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1" ^| findstr /v "169.254"') do (
-            for /f "tokens=1" %%b in ("%%a") do (
-                if not defined SERVER_IP set SERVER_IP=%%b
-            )
+    :: 2. Si no hay argumentos, buscar el archivo de configuracion guardado
+    if exist "%CONFIG_FILE%" (
+        call "%CONFIG_FILE%"
+        echo [OK] Configuracion cargada desde %CONFIG_FILE%
+    ) else (
+        echo --------------------------------------------------
+        echo Configurando Kiosko por primera vez...
+        echo --------------------------------------------------
+        
+        set /p USER_IP="Ingrese la IP del servidor (ej: 192.168.1.100): "
+        set /p USER_PORT="Ingrese el puerto (presione Enter para usar 3000): "
+        
+        if "!USER_IP!"=="" (
+            echo [ERROR] La IP del servidor es obligatoria.
+            pause
+            exit /b 1
         )
+        if "!USER_PORT!"=="" set USER_PORT=3000
+        
+        :: Limpiar comillas si las hay
+        set USER_IP=!USER_IP:"=!
+        set USER_PORT=!USER_PORT:"=!
+        
+        :: Guardar configuracion
+        echo set SERVER_IP=!USER_IP!> "%CONFIG_FILE%"
+        echo set PORT=!USER_PORT!>> "%CONFIG_FILE%"
+        
+        set SERVER_IP=!USER_IP!
+        set PORT=!USER_PORT!
+        
+        echo.
+        echo [OK] Configuracion guardada en %CONFIG_FILE%
+        echo Si necesitas cambiar la IP o el puerto, simplemente elimina ese archivo.
+        echo.
+        timeout /t 3 /nobreak >nul
     )
 )
 
-if not "%2"=="" set PORT=%2
-
 if not defined SERVER_IP (
-    echo [ERROR] No se pudo detectar la IP del servidor.
-    echo Edita este archivo y descomenta la linea: set SERVER_IP=TU_IP
+    echo [ERROR] No se ha definido la IP del servidor.
     pause
     exit /b 1
+)
+
+if not defined PORT (
+    set PORT=3000
 )
 
 set URL=http://%SERVER_IP%:%PORT%%ROUTE%

@@ -15,7 +15,7 @@ import {
   Button, Chip, IconButton, Tooltip, Divider,
   CircularProgress, Stack,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  LinearProgress,
+  LinearProgress, Checkbox,
 } from '@mui/material';
 import {
   Campaign as CallIcon,
@@ -35,9 +35,9 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import {
-  getWaitingTickets, getCalledTickets, callTicket, recallTicket,
+  getWaitingTickets, getCalledTickets, getAttendedTickets, callTicket, recallTicket,
   attendTicket, cancelTicket, getTicketStats,
-  getActiveSliders, uploadSlider, deleteSlider,
+  getActiveSliders, uploadSlider, deleteSlider, updateSlider,
 } from '@/services/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import type { Ticket, Slider, TicketStats } from '@/types';
@@ -135,7 +135,7 @@ export function SpecialistView() {
 function TurnosTab({ trigger }: { trigger: number }) {
   const [waiting,  setWaiting]  = useState<Ticket[]>([]);
   const [called,   setCalled]   = useState<Ticket | null>(null);
-  const [history,  setHistory]  = useState<Ticket[]>([]);
+  const [attendedHistory, setAttendedHistory] = useState<Ticket[]>([]);
   const [calledList, setCalledList] = useState<Ticket[]>([]);
   const [stats,    setStats]    = useState<TicketStats | null>(null);
   const [acting,   setActing]   = useState<number | null>(null);
@@ -147,18 +147,45 @@ function TurnosTab({ trigger }: { trigger: number }) {
 
   async function refresh() {
     try {
-      const [w, s, h] = await Promise.all([getWaitingTickets(), getTicketStats(), getCalledTickets()]);
-      setWaiting(w);
+      const [w, s, h, a] = await Promise.all([
+        getWaitingTickets(),
+        getTicketStats(),
+        getCalledTickets(),
+        getAttendedTickets()
+      ]);
+      
+      const priorityMap: Record<string, number> = {
+        'RESULTS': 1,  // R-n
+        'BUDGET': 2,   // P-n
+        'ANALYSIS': 3, // A-n
+      };
+      
+      const sortedWaiting = w.slice().sort((a, b) => {
+        const prioA = priorityMap[a.service_type] ?? 99;
+        const prioB = priorityMap[b.service_type] ?? 99;
+        if (prioA !== prioB) {
+          return prioA - prioB;
+        }
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      });
+
+      setWaiting(sortedWaiting);
       setStats(s);
+      
       // Todos los llamados para la cola "Llamados"
-      const sorted = h
+      const sortedCalled = h
         .slice()
-        .sort((a, b) => new Date(b.called_at ?? 0).getTime() - new Date(a.called_at ?? 0).getTime());
-      setCalledList(sorted);
-      // Últimos 6 para el historial del panel izquierdo
-      setHistory(sorted.slice(0, 6));
-      // Restaurar el turno en pantalla al recargar la página
-      setCalled(prev => prev ?? sorted[0] ?? null);
+        .sort((x, y) => new Date(y.called_at ?? 0).getTime() - new Date(x.called_at ?? 0).getTime());
+      setCalledList(sortedCalled.filter(t => t.status === 'CALLED'));
+      
+      // Historial de atendidos ordenados por hora de atención (los más recientes primero)
+      const sortedAttended = a
+        .slice()
+        .sort((x, y) => new Date(y.attended_at ?? 0).getTime() - new Date(x.attended_at ?? 0).getTime());
+      setAttendedHistory(sortedAttended.slice(0, 3));
+      
+      // El turno en pantalla es el último llamado (el que está en el display)
+      setCalled(sortedCalled[0] ?? null);
     } catch { /* silent */ }
   }
 
@@ -178,8 +205,10 @@ function TurnosTab({ trigger }: { trigger: number }) {
     if (!called) return;
     setActing(called.id);
     try {
-      await recallTicket(called.id);
+      const updated = await recallTicket(called.id);
+      setCalled(updated);
       enqueueSnackbar(`Turno ${called.ticket_number} re-llamado`, { variant: 'info' });
+      await refresh();
     } catch (e: unknown) {
       enqueueSnackbar((e as Error).message, { variant: 'error' });
     } finally { setActing(null); }
@@ -188,8 +217,10 @@ function TurnosTab({ trigger }: { trigger: number }) {
   async function handleRecallFromQueue(t: Ticket) {
     setActing(t.id);
     try {
-      await recallTicket(t.id);
+      const updated = await recallTicket(t.id);
+      setCalled(updated);
       enqueueSnackbar(`Turno ${t.ticket_number} re-llamado`, { variant: 'info' });
+      await refresh();
     } catch (e: unknown) {
       enqueueSnackbar((e as Error).message, { variant: 'error' });
     } finally { setActing(null); }
@@ -249,35 +280,10 @@ function TurnosTab({ trigger }: { trigger: number }) {
   const svc = called ? SVC[called.service_type] ?? SVC['ANALYSIS'] : null;
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '300px 1fr' }, gap: 2.5, alignItems: 'start' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, minmax(0, 1fr))' }, gap: 2.5, alignItems: 'start' }}>
 
       {/* ── PANEL IZQUIERDO ── */}
       <Stack spacing={2.5}>
-
-        {/* Stats */}
-        {stats && (
-          <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-            <CardContent sx={{ pb: '14px !important' }}>
-              <Typography variant="caption" fontWeight={800} color="#64748B" letterSpacing={1.5}
-                sx={{ textTransform: 'uppercase', fontSize: 10 }}>
-                Hoy
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.8, mt: 1 }}>
-                {[
-                  { label: 'En espera', value: stats.waiting,  color: '#2563EB' },
-                  { label: 'Llamados',  value: stats.called,   color: '#D97706' },
-                  { label: 'Atendidos', value: stats.attended, color: '#16A34A' },
-                  { label: 'Cancelados',value: stats.canceled, color: '#DC2626' },
-                ].map(s => (
-                  <Box key={s.label} sx={{ textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: 1.5, py: 0.8 }}>
-                    <Typography fontSize={20} fontWeight={900} color={s.color} lineHeight={1}>{s.value}</Typography>
-                    <Typography fontSize={10} color="#94A3B8" mt={0.2}>{s.label}</Typography>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Turno en pantalla */}
         <Card sx={{
@@ -321,27 +327,40 @@ function TurnosTab({ trigger }: { trigger: number }) {
 
                 <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 2 }} />
 
-                <Stack spacing={1}>
-                  <Button fullWidth variant="outlined" size="small"
-                    startIcon={acting === called.id ? <CircularProgress size={13} color="inherit" /> : <RecallIcon />}
-                    onClick={handleRecall} disabled={!!acting}
-                    sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.25)', fontWeight: 700,
-                      '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.06)' } }}>
-                    Volver a llamar
-                  </Button>
-                  <Button fullWidth variant="contained" size="small"
-                    startIcon={<AttendIcon />}
-                    onClick={handleAttend} disabled={!!acting}
-                    sx={{ bgcolor: '#16A34A', fontWeight: 700, '&:hover': { bgcolor: '#15803D' } }}>
-                    Marcar atendido
-                  </Button>
-                  <Button fullWidth variant="text" size="small"
-                    startIcon={<CancelIcon />}
-                    onClick={handleCancel} disabled={!!acting}
-                    sx={{ color: '#F87171', fontWeight: 700 }}>
-                    Cancelar / Ausente
-                  </Button>
-                </Stack>
+                {called.status === 'ATTENDED' || called.status === 'CANCELED' ? (
+                  <Box sx={{ py: 1 }}>
+                    <Chip
+                      label={called.status === 'ATTENDED' ? 'Atendido ✓' : 'Cancelado / Ausente ✗'}
+                      color={called.status === 'ATTENDED' ? 'success' : 'error'}
+                      sx={{ fontWeight: 800, fontSize: 13, px: 2, py: 1 }}
+                    />
+                    <Typography fontSize={11} sx={{ opacity: 0.45, mt: 1.5 }}>
+                      Este turno ya finalizó.
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Stack spacing={1}>
+                    <Button fullWidth variant="outlined" size="small"
+                      startIcon={acting === called.id ? <CircularProgress size={13} color="inherit" /> : <RecallIcon />}
+                      onClick={handleRecall} disabled={!!acting}
+                      sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.25)', fontWeight: 700,
+                        '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.06)' } }}>
+                      Volver a llamar
+                    </Button>
+                    <Button fullWidth variant="contained" size="small"
+                      startIcon={<AttendIcon />}
+                      onClick={handleAttend} disabled={!!acting}
+                      sx={{ bgcolor: '#16A34A', fontWeight: 700, '&:hover': { bgcolor: '#15803D' } }}>
+                      Marcar atendido
+                    </Button>
+                    <Button fullWidth variant="text" size="small"
+                      startIcon={<CancelIcon />}
+                      onClick={handleCancel} disabled={!!acting}
+                      sx={{ color: '#F87171', fontWeight: 700 }}>
+                      Cancelar / Ausente
+                    </Button>
+                  </Stack>
+                )}
               </Box>
             ) : (
               <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -353,68 +372,78 @@ function TurnosTab({ trigger }: { trigger: number }) {
           </CardContent>
         </Card>
 
-        {/* Últimos llamados */}
-        {history.length > 0 && (
-          <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-            <CardContent sx={{ pb: '12px !important' }}>
-              <Typography variant="caption" fontWeight={800} color="#64748B" letterSpacing={1.5}
-                sx={{ textTransform: 'uppercase', fontSize: 10 }}>
-                Últimos llamados
-              </Typography>
-              <Stack spacing={0.8} mt={1}>
-                {history.map(t => {
-                  const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
-                  return (
-                    <Box key={t.id} sx={{
-                      display: 'flex', alignItems: 'center', gap: 1.2,
-                      bgcolor: '#F8FAFC', borderRadius: 1.5,
-                      border: '1px solid #E2E8F0', px: 1.2, py: 0.6,
-                    }}>
-                      <Box sx={{
-                        bgcolor: c.bg, borderRadius: 1, px: 1, py: 0.2,
-                        border: `1px solid ${c.border}`, minWidth: 52, textAlign: 'center',
+        {/* Fila inferior: Stats + Últimos Atendidos */}
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+          gap: 2,
+        }}>
+          {/* Stats */}
+          {stats && (
+            <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', height: '100%' }}>
+              <CardContent sx={{ pb: '14px !important', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="caption" fontWeight={800} color="#64748B" letterSpacing={1.5}
+                  sx={{ textTransform: 'uppercase', fontSize: 10, mb: 1 }}>
+                  Hoy
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0.8, flexGrow: 1 }}>
+                  {[
+                    { label: 'En espera', value: stats.waiting,  color: '#2563EB' },
+                    { label: 'Llamados',  value: stats.called,   color: '#D97706' },
+                    { label: 'Atendidos', value: stats.attended, color: '#16A34A' },
+                    { label: 'Cancelados',value: stats.canceled, color: '#DC2626' },
+                  ].map(s => (
+                    <Box key={s.label} sx={{ textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: 1.5, py: 0.8, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <Typography fontSize={18} fontWeight={900} color={s.color} lineHeight={1}>{s.value}</Typography>
+                      <Typography fontSize={9} color="#94A3B8" mt={0.2}>{s.label}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Últimos atendidos */}
+          {attendedHistory.length > 0 && (
+            <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', height: '100%' }}>
+              <CardContent sx={{ pb: '12px !important', height: '100%' }}>
+                <Typography variant="caption" fontWeight={800} color="#64748B" letterSpacing={1.5}
+                  sx={{ textTransform: 'uppercase', fontSize: 10 }}>
+                  Últimos Atendidos
+                </Typography>
+                <Stack spacing={0.8} mt={1}>
+                  {attendedHistory.map(t => {
+                    const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
+                    return (
+                      <Box key={t.id} sx={{
+                        display: 'flex', alignItems: 'center', gap: 1,
+                        bgcolor: '#F8FAFC', borderRadius: 1.5,
+                        border: '1px solid #E2E8F0', px: 1, py: 0.5,
                       }}>
-                        <Typography fontWeight={900} fontSize={14} color={c.num}
-                          sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.3 }}>
-                          {t.ticket_number}
+                        <Box sx={{
+                          bgcolor: c.bg, borderRadius: 1, px: 0.8, py: 0.15,
+                          border: `1px solid ${c.border}`, minWidth: 46, textAlign: 'center',
+                        }}>
+                          <Typography fontWeight={900} fontSize={12} color={c.num}
+                            sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.3 }}>
+                            {t.ticket_number}
+                          </Typography>
+                        </Box>
+                        <Typography fontSize={10} color="#64748B" sx={{ flexGrow: 1 }}>
+                          {t.attended_at ? fmtTime(t.attended_at) : '—'}
                         </Typography>
                       </Box>
-                      <Typography fontSize={11} color="#64748B" sx={{ flexGrow: 1 }}>
-                        {fmtTime(t.called_at)}
-                      </Typography>
-                      <Tooltip title="Volver a llamar este turno">
-                        <IconButton
-                          size="small"
-                          disabled={acting === t.id}
-                          onClick={async () => {
-                            setActing(t.id);
-                            try {
-                              await recallTicket(t.id);
-                              setCalled(t);
-                              enqueueSnackbar(`Turno ${t.ticket_number} re-llamado`, { variant: 'info' });
-                            } catch (e: unknown) {
-                              enqueueSnackbar((e as Error).message, { variant: 'error' });
-                            } finally { setActing(null); }
-                          }}
-                          sx={{ color: '#1B2A4A', '&:hover': { bgcolor: '#EFF6FF' } }}
-                        >
-                          {acting === t.id
-                            ? <CircularProgress size={14} />
-                            : <RecallIcon fontSize="small" />}
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  );
-                })}
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+                    );
+                  })}
+                </Stack>
+              </CardContent>
+            </Card>
+          )}
+        </Box>
       </Stack>
 
       {/* ── PANEL DERECHO: Cola de espera + Llamados ── */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-        {/* Cola de espera */}
+      {/* Cola de espera */}
         <Card sx={{ borderRadius: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -443,7 +472,27 @@ function TurnosTab({ trigger }: { trigger: number }) {
                 <Typography fontSize={13} color="#94A3B8">No hay turnos en espera.</Typography>
               </Box>
             ) : (
-              <Stack spacing={1.2} sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', pr: 0.5 }}>
+              <Stack spacing={1.2} sx={{
+                maxHeight: 'calc(100vh - 220px)',
+                overflowY: 'auto',
+                pr: 0.5,
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#CBD5E1 #F1F5F9',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: '#F1F5F9',
+                  borderRadius: '10px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#CBD5E1',
+                  borderRadius: '10px',
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  background: '#94A3B8',
+                },
+              }}>
                 {waiting.map((t, i) => {
                   const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
                   return (
@@ -521,7 +570,27 @@ function TurnosTab({ trigger }: { trigger: number }) {
                 <Typography fontSize={13} color="#94A3B8">No hay turnos llamados.</Typography>
               </Box>
             ) : (
-              <Stack spacing={1.2} sx={{ maxHeight: 'calc(100vh - 220px)', overflowY: 'auto', pr: 0.5 }}>
+              <Stack spacing={1.2} sx={{
+                maxHeight: 'calc(100vh - 220px)',
+                overflowY: 'auto',
+                pr: 0.5,
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#CBD5E1 #F1F5F9',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: '#F1F5F9',
+                  borderRadius: '10px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#CBD5E1',
+                  borderRadius: '10px',
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  background: '#94A3B8',
+                },
+              }}>
                 {calledList.map(t => {
                   const c = SVC[t.service_type] ?? SVC['ANALYSIS'];
                   return (
@@ -583,8 +652,7 @@ function TurnosTab({ trigger }: { trigger: number }) {
           </CardContent>
         </Card>
       </Box>
-    </Box>
-  );
+    );
 }
 
 /* ═══════════════════════════════ TAB: SLIDERS ══════════════════ */
@@ -622,6 +690,7 @@ function SlidersTab({ trigger: _trigger }: { trigger: number }) {
     fd.append('is_active', 'true');
     fd.append('order', String(sliders.length + 1));
     if (!isVideo) fd.append('duration', '8');
+    else fd.append('has_sound', 'true');
 
     setUploading(true);
     try {
@@ -753,6 +822,27 @@ function SlidersTab({ trigger: _trigger }: { trigger: number }) {
                       )}
                     </Box>
                   </Box>
+
+                  {s.media_type === 'VIDEO' && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.2, mr: 1 }}>
+                      <Checkbox
+                        size="small"
+                        checked={s.has_sound}
+                        onChange={async () => {
+                          const nextChecked = !s.has_sound;
+                          try {
+                            await updateSlider(s.id, { has_sound: nextChecked });
+                            enqueueSnackbar(nextChecked ? 'Sonido activado ✓' : 'Sonido desactivado 🔇', { variant: 'info' });
+                            await load();
+                          } catch (err: unknown) {
+                            enqueueSnackbar((err as Error).message || 'Error al actualizar', { variant: 'error' });
+                          }
+                        }}
+                        sx={{ p: 0.5 }}
+                      />
+                      <Typography fontSize={11} color="#64748B" fontWeight={700}>Sonido</Typography>
+                    </Box>
+                  )}
 
                   <Tooltip title="Eliminar slide">
                     <IconButton
