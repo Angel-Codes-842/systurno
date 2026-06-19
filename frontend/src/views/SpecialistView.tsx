@@ -74,7 +74,7 @@ export function SpecialistView() {
       display: 'flex', flexDirection: 'column',
     }}>
 
-      {/* ── HEADER (idéntico al Display) ── */}
+      {/* ── HEADER UNIFICADO (Premium Dark Navbar) ── */}
       <Box component="header" sx={{
         bgcolor: '#1B2A4A',
         backgroundImage: 'repeating-linear-gradient(-45deg,transparent,transparent 14px,rgba(255,255,255,0.015) 14px,rgba(255,255,255,0.015) 15px)',
@@ -82,11 +82,49 @@ export function SpecialistView() {
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         px: 4, flexShrink: 0,
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
-        <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 52, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+        {/* Izquierda: Logo */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 52, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+        </Box>
 
+        {/* Centro: Tabs integrados en el Navbar */}
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          sx={{
+            height: 72,
+            '& .MuiTabs-flexContainer': { height: '100%' },
+            '& .MuiTab-root': {
+              fontWeight: 700,
+              textTransform: 'none',
+              fontSize: 14,
+              color: 'rgba(255,255,255,0.6)',
+              minHeight: 72,
+              px: 3,
+              gap: 1,
+              transition: 'all 0.2s',
+              '&:hover': {
+                color: '#fff',
+                backgroundColor: 'rgba(255,255,255,0.04)',
+              }
+            },
+            '& .Mui-selected': {
+              color: '#ffffff !important',
+            },
+            '& .MuiTabs-indicator': {
+              bgcolor: '#ffffff',
+              height: 3,
+            },
+          }}
+        >
+          <Tab icon={<QueueIcon fontSize="small" />} iconPosition="start" label="Turnos" />
+          <Tab icon={<SliderIcon fontSize="small" />} iconPosition="start" label="Sliders del Display" />
+        </Tabs>
+
+        {/* Derecha: Estado WebSocket */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Estado WebSocket */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
             {isConnected ? (
               <DotIcon sx={{ fontSize: 10, color: '#4ADE80' }} />
@@ -102,22 +140,6 @@ export function SpecialistView() {
             Panel de Recepción
           </Typography>
         </Box>
-      </Box>
-
-      {/* ── TABS ── */}
-      <Box sx={{ bgcolor: '#fff', borderBottom: '1px solid #E2E8F0', px: 4 }}>
-        <Tabs
-          value={tab}
-          onChange={(_, v) => setTab(v)}
-          sx={{
-            '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: 14, color: '#64748B' },
-            '& .Mui-selected': { color: '#1B2A4A !important' },
-            '& .MuiTabs-indicator': { bgcolor: '#1B2A4A', height: 3 },
-          }}
-        >
-          <Tab icon={<QueueIcon fontSize="small" />} iconPosition="start" label="Turnos" />
-          <Tab icon={<SliderIcon fontSize="small" />} iconPosition="start" label="Sliders del Display" />
-        </Tabs>
       </Box>
 
       {/* ── CONTENIDO ── */}
