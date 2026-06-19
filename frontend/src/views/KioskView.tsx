@@ -146,9 +146,12 @@ export function KioskView() {
           objectFit: 'cover',
           zIndex: 0,
           pointerEvents: 'none',
+          transform: 'translate3d(0, 0, 0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
         }}
       >
-        <source src="/sliders/turnero.mp4" type="video/mp4" />
+        <source src="/sliders/turnero.mp4?v=2" type="video/mp4" />
       </video>
 
       {/* Overlay sutil para legibilidad */}

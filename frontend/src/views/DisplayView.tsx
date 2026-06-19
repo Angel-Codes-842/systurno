@@ -254,7 +254,7 @@ export function DisplayView() {
           willChange: 'transform',
         }}
       >
-        <source src="/sliders/turnero.mp4" type="video/mp4" />
+        <source src="/sliders/turnero.mp4?v=2" type="video/mp4" />
       </video>
 
       {/* Overlay oscuro sutil para mejorar legibilidad */}
@@ -576,7 +576,7 @@ export function DisplayView() {
                   controlsList="nodownload nofullscreen noremoteplayback"
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
                 >
-                  <source src="/sliders/turnero.mp4" type="video/mp4" />
+                  <source src="/sliders/turnero.mp4?v=2" type="video/mp4" />
                 </video>
               </div>
             )}
