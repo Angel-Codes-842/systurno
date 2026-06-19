@@ -95,12 +95,50 @@ def list_specialists(request):
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def text_to_speech(request):
-    """Genera audio TTS para navegadores sin speechSynthesis nativo."""
+    """Genera audio TTS local y offline con Piper, con fallback a gTTS."""
     text = request.query_params.get('text', '').strip()
     lang = request.query_params.get('lang', 'es')
     if not text:
         return Response({'detail': 'El texto es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    import os
+    import subprocess
+    import tempfile
+
+    # Definir rutas para el ejecutable y modelo de Piper
+    backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    piper_exe = os.path.join(backend_dir, "piper", "piper.exe")
+    model_path = os.path.join(backend_dir, "piper", "voices", "es_MX-claude-high.onnx")
+
+    # Intentar generar el audio de forma local y offline con Piper
+    if os.path.exists(piper_exe) and os.path.exists(model_path):
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+                temp_wav_path = temp_wav.name
+
+            p = subprocess.Popen(
+                [piper_exe, "--model", model_path, "--output_file", temp_wav_path],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            stdout, stderr = p.communicate(input=text.encode('utf-8'))
+
+            if p.returncode == 0 and os.path.exists(temp_wav_path):
+                with open(temp_wav_path, 'rb') as f:
+                    audio_data = f.read()
+                try:
+                    os.remove(temp_wav_path)
+                except OSError:
+                    pass
+                return HttpResponse(audio_data, content_type='audio/wav')
+            else:
+                err_msg = stderr.decode('utf-8', errors='ignore')
+                print(f"Error al ejecutar Piper (código {p.returncode}): {err_msg}")
+        except Exception as e:
+            print(f"Excepción al ejecutar Piper local: {e}")
+
+    # Fallback si no está Piper o falla la generación
     try:
         buffer = BytesIO()
         tts = gTTS(text=text, lang=lang)

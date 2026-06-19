@@ -65,3 +65,7 @@ Thumbs.db
 
 # Recursos de referencia (no commitear)
 recursos frontend/
+
+# Piper (local binary & voices)
+backend/piper/
+
