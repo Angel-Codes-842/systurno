@@ -26,7 +26,7 @@ export const theme = createTheme({
         
         @font-face {
           font-family: 'GoodTimeGrotesk';
-          src: url('/fonts/MADE GoodTime Grotesk PERSONAL USE.otf') format('opentype');
+          src: url('/fonts/made_goodtime_grotesk.otf') format('opentype');
           font-weight: normal;
           font-style: normal;
         }
