@@ -170,15 +170,8 @@ export function KioskView() {
         padding: '0 32px',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
-        {/* Logo */}
-        <div style={{
-          background: '#fff', borderRadius: 10,
-          padding: '6px 14px', display: 'flex', alignItems: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        }}>
-          <img src="/logo_biogenic.png" alt="Biogenic"
-            style={{ height: 46, objectFit: 'contain', display: 'block' }} />
-        </div>
+        {/* Logo Biogenic */}
+        <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 56, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
 
         {/* Fecha + Hora — píldora (estilo cápsulas superpuestas) */}
         <div style={{
