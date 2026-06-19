@@ -121,6 +121,7 @@ export function DisplayView() {
   const { date, time } = useClock();
   const [isAnnouncing, setIsAnnouncing] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const bgVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const handleStart = () => setIsAnnouncing(true);
@@ -153,11 +154,18 @@ export function DisplayView() {
   useWebSocket(WS_URL, {
     onTicketCalled: (t) => {
       setTickets(cur => {
-        const exists = cur.some(x => x.id === t.id);
-        if (exists) {
-          return cur.map(x => x.id === t.id ? t : x);
-        } else {
+        if (t.status === 'CALLED') {
+          // Si está siendo llamado, se remueve de cualquier otra posición y se coloca al frente.
           return [t, ...cur.filter(x => x.id !== t.id)].slice(0, 6);
+        } else if (t.status === 'ATTENDED' || t.status === 'CANCELED') {
+          // Si fue atendido o cancelado, se remueve de la lista de llamados de la pantalla.
+          return cur.filter(x => x.id !== t.id);
+        } else {
+          const exists = cur.some(x => x.id === t.id);
+          if (exists) {
+            return cur.map(x => x.id === t.id ? t : x);
+          }
+          return cur;
         }
       });
       if (t.status === 'CALLED') {
@@ -187,6 +195,17 @@ export function DisplayView() {
   const slide  = useMemo(() => sliders[idx] ?? null, [idx, sliders]);
   const latest = tickets[0] ?? null;
   const prev   = tickets.slice(1, 5);
+
+  // Pausar video de fondo si el slider actual está reproduciendo un video (para evitar doble decodificación por hardware lagueada)
+  useEffect(() => {
+    if (bgVideoRef.current) {
+      if (slide && slide.media_type === 'VIDEO') {
+        bgVideoRef.current.pause();
+      } else {
+        bgVideoRef.current.play().catch(() => {});
+      }
+    }
+  }, [slide]);
 
   async function fetchSliders() {
     try {
@@ -219,6 +238,7 @@ export function DisplayView() {
 
       {/* ════ VIDEO DE FONDO — turnero.mp4 full screen ════════════ */}
       <video
+        ref={bgVideoRef}
         autoPlay loop muted playsInline
         disablePictureInPicture
         disableRemotePlayback
@@ -229,6 +249,9 @@ export function DisplayView() {
           objectFit: 'cover',
           zIndex: 0,
           pointerEvents: 'none',
+          transform: 'translate3d(0, 0, 0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
         }}
       >
         <source src="/sliders/turnero.mp4" type="video/mp4" />
@@ -474,28 +497,68 @@ export function DisplayView() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                 background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
               }}>
-                {slide.media_type === 'IMAGE'
-                  ? <img
+                {slide.media_type === 'IMAGE' ? (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: '#000',
+                    transform: 'translate3d(0, 0, 0)',
+                    willChange: 'transform',
+                  }}>
+                    {/* Imagen difuminada de fondo */}
+                    <img
+                      src={slide.image_url ?? ''}
+                      alt=""
+                      style={{
+                        position: 'absolute', inset: 0,
+                        width: '100%', height: '100%',
+                        objectFit: 'cover',
+                        filter: 'blur(20px) brightness(0.4)',
+                        transform: 'scale(1.1) translate3d(0, 0, 0)',
+                        opacity: 0.6,
+                        willChange: 'transform',
+                      }}
+                    />
+                    {/* Imagen real contenida al frente */}
+                    <img
                       key={slide.id}
                       src={slide.image_url ?? ''}
                       alt={slide.title}
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{
+                        position: 'relative',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        zIndex: 1,
+                        transform: 'translate3d(0, 0, 0)',
+                        willChange: 'transform',
+                      }}
                     />
-                  : <video
-                      key={slide.id}
-                      ref={handleVideoLoad}
-                      autoPlay
-                      muted={!slide.has_sound}
-                      playsInline
-                      disablePictureInPicture
-                      disableRemotePlayback
-                      controlsList="nodownload nofullscreen noremoteplayback"
-                      onEnded={() => setIdx(p => (p + 1) % sliders.length)}
-                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }}
-                    >
-                      <source src={slide.video_url ?? ''} type="video/mp4" />
-                    </video>
-                }
+                  </div>
+                ) : (
+                  <video
+                    key={slide.id}
+                    ref={handleVideoLoad}
+                    autoPlay
+                    muted={!slide.has_sound}
+                    playsInline
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    controlsList="nodownload nofullscreen noremoteplayback"
+                    onEnded={() => setIdx(p => (p + 1) % sliders.length)}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'contain',
+                      pointerEvents: 'none',
+                      transform: 'translate3d(0, 0, 0)',
+                      backfaceVisibility: 'hidden',
+                      willChange: 'transform',
+                    }}
+                  >
+                    <source src={slide.video_url ?? ''} type="video/mp4" />
+                  </video>
+                )}
 
 
               </div>
