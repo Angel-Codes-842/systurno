@@ -8,7 +8,6 @@ from django.utils import timezone
 from django.http import HttpResponse
 from datetime import datetime, timedelta
 from io import BytesIO
-from gtts import gTTS
 
 def get_today_time_range():
     """Helper method to get the start and end of the current day in the local timezone."""
@@ -138,18 +137,11 @@ def text_to_speech(request):
         except Exception as e:
             print(f"Excepción al ejecutar Piper local: {e}")
 
-    # Fallback si no está Piper o falla la generación
-    try:
-        buffer = BytesIO()
-        tts = gTTS(text=text, lang=lang)
-        tts.write_to_fp(buffer)
-        buffer.seek(0)
-        return HttpResponse(buffer.read(), content_type='audio/mpeg')
-    except Exception as e:
-        return Response(
-            {'detail': 'Error generando audio TTS.', 'error': str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+    # Si llega aquí, significa que falló Piper y no hay fallback
+    return Response(
+        {'detail': 'Error al generar el audio localmente con la voz seleccionada (Piper).'},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    )
 
 
 class PatientViewSet(viewsets.ModelViewSet):
