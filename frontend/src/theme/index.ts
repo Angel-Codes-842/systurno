@@ -25,6 +25,28 @@ export const theme = createTheme({
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; }
         body { margin: 0; }
+        
+        /* Evitar que los navegadores detecten o muestren controles sobre los videos de fondo */
+        video {
+          pointer-events: none !important;
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+        video::-webkit-media-controls {
+          display: none !important;
+        }
+        video::-webkit-media-controls-panel {
+          display: none !important;
+        }
+        video::-webkit-media-controls-panel-container {
+          display: none !important;
+        }
+        video::-webkit-media-controls-start-playback-button {
+          display: none !important;
+        }
       `,
     },
   },
