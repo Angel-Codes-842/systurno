@@ -259,8 +259,7 @@ export function DisplayView() {
           background: 'transparent',
           display: 'flex', alignItems: 'center',
           justifyContent: 'space-between',
-          paddingLeft: 64,
-          paddingRight: 36,
+          padding: '0 36px',
         }}>
           {/* Píldora fecha | hora (estilo cápsulas superpuestas) */}
           <div style={{
@@ -313,7 +312,7 @@ export function DisplayView() {
           <div style={{
             width: '36%', flexShrink: 0,
             display: 'flex', flexDirection: 'column',
-            padding: '0 20px 0 20px',
+            padding: '0 20px 0 36px',
             gap: 0,
           }}>
 
