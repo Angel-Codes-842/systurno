@@ -30,12 +30,7 @@ import type { Slider, Ticket } from '@/types';
 
 const WS_URL = '/ws/checkins/';
 
-/* ── Colores por tipo de servicio (chips de ANTERIORES) ── */
-const CHIP_COLORS: Record<string, { bg: string; num: string; time: string }> = {
-  ANALYSIS: { bg: 'rgba(237,233,254,0.92)', num: '#4C1D95', time: '#7C3AED' },
-  RESULTS:  { bg: 'rgba(220,252,231,0.92)', num: '#14532D', time: '#16A34A' },
-  BUDGET:   { bg: 'rgba(254,243,199,0.92)', num: '#78350F', time: '#D97706' },
-};
+
 
 /* ── Reloj ── */
 function pad(n: number) { return String(n).padStart(2, '0'); }
@@ -412,13 +407,12 @@ export function DisplayView() {
                 Anteriores
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '88%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '65%', overflow: 'hidden' }}>
                 {prev.length === 0
                   ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
                       Los turnos anteriores aparecerán aquí
                     </p>
                   : prev.map(t => {
-                      const c = CHIP_COLORS[t.service_type] ?? CHIP_COLORS['ANALYSIS'];
                       const hora = t.called_at
                         ? (() => {
                             const d = new Date(t.called_at);
@@ -432,18 +426,18 @@ export function DisplayView() {
                         : '';
                       return (
                         <div key={t.id} style={{
-                          backgroundColor: c.bg,
-                          borderRadius: 12,
-                          padding: '10px 16px 8px',
+                          background: 'linear-gradient(135deg, #e0e7ff 0%, #fef9c3 100%)',
+                          borderRadius: 14,
+                          padding: '12px 14px 10px',
                           textAlign: 'center',
-                          border: `1.5px solid ${c.time}33`,
+                          border: '1px solid rgba(0,0,0,0.06)',
                           boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
                         }}>
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 900,
-                            fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-                            color: c.num, lineHeight: 1.05,
+                            fontSize: 'clamp(1.5rem, 2.8vw, 2.2rem)',
+                            color: '#1E293B', lineHeight: 1.0,
                             letterSpacing: '0.02em',
                             fontVariantNumeric: 'tabular-nums',
                           }}>
@@ -452,8 +446,8 @@ export function DisplayView() {
                           {hora && (
                             <div style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontSize: 10, fontWeight: 700,
-                              color: c.time, letterSpacing: '0.04em', marginTop: 4,
+                              fontSize: 10.5, fontWeight: 700,
+                              color: '#488E3E', letterSpacing: '0.04em', marginTop: 5,
                             }}>
                               {hora}
                             </div>
