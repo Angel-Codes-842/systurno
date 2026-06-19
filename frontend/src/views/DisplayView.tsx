@@ -320,70 +320,72 @@ export function DisplayView() {
             <div style={{
               flexShrink: 0,
               backgroundColor: '#1B2A4A',
-              backgroundImage: 'repeating-linear-gradient(-45deg,transparent,transparent 14px,rgba(255,255,255,0.02) 14px,rgba(255,255,255,0.02) 15px)',
-              borderRadius: 14,
-              border: '1px solid rgba(255,255,255,0.12)',
-              padding: '18px 16px 26px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              borderRadius: 24,
+              padding: '0 16px 16px 16px',
+              display: 'flex', flexDirection: 'column', alignItems: 'stretch',
               marginBottom: 12,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
             }}>
-              {/* Badge ÚLTIMO LLAMADO */}
+              {/* Título ÚLTIMO LLAMADO */}
               <div style={{
-                backgroundColor: 'rgba(0,0,0,0.35)',
-                borderRadius: 9,
-                padding: '10px 0',
-                width: '100%', textAlign: 'center',
-                marginBottom: 14,
+                color: '#ffffff',
+                fontWeight: 900,
+                fontSize: 18,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                textAlign: 'center',
+                padding: '16px 0 12px 0',
               }}>
-                <span style={{
-                  color: '#fff', fontWeight: 900, fontSize: 15,
-                  letterSpacing: '0.3em', textTransform: 'uppercase',
-                }}>
-                  Último Llamado
-                </span>
+                Último Llamado
               </div>
 
-              {/* Número de turno */}
+              {/* Contenedor Blanco Interno */}
               <div style={{
-                border: '4px solid #1B2A4A',
-                borderRadius: 12,
-                padding: '10px 0',
-                width: '90%', textAlign: 'center',
                 backgroundColor: '#ffffff',
-                marginBottom: 14,
-                minHeight: 90,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                borderRadius: 16,
+                padding: '24px 16px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)',
+                minHeight: 180,
               }}>
-                {latest
-                  ? <span style={{
-                      fontSize: 'clamp(3.2rem, 6vw, 5.5rem)',
-                      fontWeight: 900, color: '#1B2A4A',
-                      lineHeight: 1, letterSpacing: '-0.01em',
+                {latest ? (
+                  <>
+                    <span style={{
+                      fontSize: 'clamp(3.8rem, 7vw, 6.5rem)',
+                      fontWeight: 900,
+                      color: '#1E293B',
+                      lineHeight: 1.0,
+                      letterSpacing: '-0.02em',
                       fontVariantNumeric: 'tabular-nums',
+                      marginBottom: 12,
                     }}>
                       {latest.ticket_number}
                     </span>
-                  : <span style={{
-                      color: 'rgba(255,255,255,0.3)', fontSize: 12,
-                      fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    <span style={{
+                      color: '#488E3E',
+                      fontWeight: 800,
+                      fontSize: 22,
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
                     }}>
-                      Esperando...
+                      Pase a Recepción
                     </span>
-                }
+                  </>
+                ) : (
+                  <span style={{
+                    color: '#94A3B8',
+                    fontSize: 16,
+                    fontWeight: 700,
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                  }}>
+                    Esperando...
+                  </span>
+                )}
               </div>
-
-              {/* PASE A RECEPCIÓN */}
-              {latest && (
-                <span style={{
-                  color: '#4ADE80', fontWeight: 900,
-                  fontSize: 20, letterSpacing: '0.25em',
-                  textTransform: 'uppercase',
-                  textShadow: '0 0 20px rgba(74,222,128,0.4), 0 2px 4px rgba(0,0,0,0.3)',
-                }}>
-                  Pase a Recepción
-                </span>
-              )}
             </div>
 
             {/* Sección ANTERIORES */}
