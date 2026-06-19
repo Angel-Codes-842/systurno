@@ -86,7 +86,7 @@ export function SpecialistView() {
       }}>
         {/* Izquierda: Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 52, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 52, objectFit: 'contain', display: 'block', filter: 'brightness(0) invert(1)' }} />
         </Box>
 
         {/* Centro: Tabs integrados en el Navbar */}
