@@ -315,7 +315,7 @@ function TurnosTab({ trigger }: { trigger: number }) {
                 }}>
                   <Typography
                     fontWeight={900} color={svc?.num} lineHeight={1}
-                    sx={{ fontSize: 52, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}
+                    sx={{ fontFamily: '"GoodTimeGrotesk", sans-serif', fontSize: 44, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }}
                   >
                     {called.ticket_number}
                   </Typography>
@@ -424,8 +424,8 @@ function TurnosTab({ trigger }: { trigger: number }) {
                           bgcolor: c.bg, borderRadius: 1, px: 0.8, py: 0.15,
                           border: `1px solid ${c.border}`, minWidth: 46, textAlign: 'center',
                         }}>
-                          <Typography fontWeight={900} fontSize={12} color={c.num}
-                            sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.3 }}>
+                          <Typography fontWeight={900} fontSize={11} color={c.num}
+                            sx={{ fontFamily: '"GoodTimeGrotesk", sans-serif', fontVariantNumeric: 'tabular-nums', lineHeight: 1.3 }}>
                             {t.ticket_number}
                           </Typography>
                         </Box>
@@ -512,8 +512,8 @@ function TurnosTab({ trigger }: { trigger: number }) {
                         border: `1.5px solid ${c.border}`,
                         px: 1.5, py: 0.5, minWidth: 68, textAlign: 'center',
                       }}>
-                        <Typography fontWeight={900} fontSize={20} color={c.num}
-                          sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
+                        <Typography fontWeight={900} fontSize={18} color={c.num}
+                          sx={{ fontFamily: '"GoodTimeGrotesk", sans-serif', fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
                           {t.ticket_number}
                         </Typography>
                       </Box>
@@ -605,8 +605,8 @@ function TurnosTab({ trigger }: { trigger: number }) {
                         border: `1.5px solid ${c.border}`,
                         px: 1.5, py: 0.5, minWidth: 68, textAlign: 'center',
                       }}>
-                        <Typography fontWeight={900} fontSize={20} color={c.num}
-                          sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
+                        <Typography fontWeight={900} fontSize={18} color={c.num}
+                          sx={{ fontFamily: '"GoodTimeGrotesk", sans-serif', fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
                           {t.ticket_number}
                         </Typography>
                       </Box>

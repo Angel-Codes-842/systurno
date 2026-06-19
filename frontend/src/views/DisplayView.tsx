@@ -328,10 +328,11 @@ export function DisplayView() {
             }}>
               {/* Título ÚLTIMO LLAMADO */}
               <div style={{
+                fontFamily: '"Poppins", sans-serif',
                 color: '#ffffff',
-                fontWeight: 900,
+                fontWeight: 800,
                 fontSize: 18,
-                letterSpacing: '0.2em',
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 textAlign: 'center',
                 padding: '16px 0 12px 0',
@@ -354,20 +355,22 @@ export function DisplayView() {
                 {latest ? (
                   <>
                     <span style={{
-                      fontSize: 'clamp(3.8rem, 7vw, 6.5rem)',
+                      fontFamily: '"GoodTimeGrotesk", sans-serif',
+                      fontSize: 'clamp(3.2rem, 6vw, 5.5rem)',
                       fontWeight: 900,
                       color: '#1E293B',
                       lineHeight: 1.0,
-                      letterSpacing: '-0.02em',
+                      letterSpacing: '0.02em',
                       fontVariantNumeric: 'tabular-nums',
                       marginBottom: 12,
                     }}>
                       {latest.ticket_number}
                     </span>
                     <span style={{
+                      fontFamily: '"Poppins", sans-serif',
                       color: '#488E3E',
                       fontWeight: 800,
-                      fontSize: 22,
+                      fontSize: 20,
                       letterSpacing: '0.15em',
                       textTransform: 'uppercase',
                     }}>
@@ -427,8 +430,9 @@ export function DisplayView() {
                           border: `1px solid ${c.time}44`,
                         }}>
                           <div style={{
+                            fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 900,
-                            fontSize: 'clamp(1.3rem, 2.4vw, 1.7rem)',
+                            fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
                             color: c.num, lineHeight: 1.05,
                             letterSpacing: '0.04em',
                             fontVariantNumeric: 'tabular-nums',

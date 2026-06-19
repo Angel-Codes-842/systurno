@@ -355,10 +355,11 @@ export function KioskView() {
                 boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}>
                 <div style={{
-                  fontSize: 'clamp(4rem, 12vw, 6rem)',
+                  fontFamily: '"GoodTimeGrotesk", sans-serif',
+                  fontSize: 'clamp(3rem, 10vw, 5rem)',
                   fontWeight: 900, color: svc.dark,
                   fontVariantNumeric: 'tabular-nums',
-                  lineHeight: 1, letterSpacing: '-0.01em',
+                  lineHeight: 1, letterSpacing: '0.02em',
                 }}>
                   {ticket.ticket_number}
                 </div>
@@ -511,7 +512,8 @@ export function KioskView() {
             letter-spacing: 0.1em; margin-bottom: 4px;
           }
           .tk-number {
-            font-size: 54pt; font-weight: 900;
+            font-family: 'GoodTimeGrotesk', sans-serif;
+            font-size: 48pt; font-weight: 900;
             text-align: center; letter-spacing: 0.05em;
             line-height: 1; margin: 6px 0;
           }

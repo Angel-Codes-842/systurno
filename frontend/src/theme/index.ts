@@ -22,7 +22,15 @@ export const theme = createTheme({
     },
     MuiCssBaseline: {
       styleOverrides: `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+        
+        @font-face {
+          font-family: 'GoodTimeGrotesk';
+          src: url('/fonts/MADE GoodTime Grotesk PERSONAL USE.otf') format('opentype');
+          font-weight: normal;
+          font-style: normal;
+        }
+        
         * { box-sizing: border-box; }
         body { margin: 0; }
         

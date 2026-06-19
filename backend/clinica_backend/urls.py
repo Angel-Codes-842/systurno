@@ -18,18 +18,27 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import FileResponse, HttpResponseNotFound
+from django.http import FileResponse, HttpResponseNotFound, Http404
 from django.views.static import serve
 import os
 
 FRONTEND_DIST = os.path.join(settings.BASE_DIR.parent, 'frontend', 'dist')
 
 def frontend_spa(request):
-    """Sirve el index.html del frontend para rutas SPA."""
-    index_path = os.path.join(FRONTEND_DIST, 'index.html')
-    if os.path.exists(index_path):
-        return FileResponse(open(index_path, 'rb'), content_type='text/html')
-    return HttpResponseNotFound('Frontend build not found. Run `npm run build` in the frontend directory.')
+    """Sirve archivos estáticos compilados si existen, o index.html como fallback SPA."""
+    path = request.path.lstrip('/')
+    if not path:
+        path = 'index.html'
+        
+    file_path = os.path.join(FRONTEND_DIST, path)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        try:
+            return serve(request, path, document_root=FRONTEND_DIST)
+        except Http404:
+            pass
+            
+    # Fallback para rutas React Router SPA
+    return serve(request, 'index.html', document_root=FRONTEND_DIST)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
