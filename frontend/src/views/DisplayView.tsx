@@ -404,6 +404,7 @@ export function DisplayView() {
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             }}>
               <p style={{
+                fontFamily: '"Poppins", sans-serif',
                 color: '#64748B', fontSize: 16, fontWeight: 800,
                 letterSpacing: '0.28em', textTransform: 'uppercase',
                 margin: '0 0 12px', textAlign: 'center',
@@ -411,7 +412,7 @@ export function DisplayView() {
                 Anteriores
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '76%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '88%', overflow: 'hidden' }}>
                 {prev.length === 0
                   ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
                       Los turnos anteriores aparecerán aquí
@@ -419,30 +420,40 @@ export function DisplayView() {
                   : prev.map(t => {
                       const c = CHIP_COLORS[t.service_type] ?? CHIP_COLORS['ANALYSIS'];
                       const hora = t.called_at
-                        ? new Date(t.called_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                        ? (() => {
+                            const d = new Date(t.called_at);
+                            let hours = d.getHours();
+                            const minutes = d.getMinutes();
+                            const ampm = hours >= 12 ? 'p. m.' : 'a. m.';
+                            hours = hours % 12;
+                            hours = hours ? hours : 12;
+                            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                          })()
                         : '';
                       return (
                         <div key={t.id} style={{
-                          backgroundColor: 'rgba(255,255,255,0.06)',
-                          borderRadius: 10,
-                          padding: '7px 10px 6px',
+                          backgroundColor: c.bg,
+                          borderRadius: 12,
+                          padding: '10px 16px 8px',
                           textAlign: 'center',
-                          border: `1px solid ${c.time}44`,
+                          border: `1.5px solid ${c.time}33`,
+                          boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
                         }}>
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 900,
-                            fontSize: 'clamp(1.1rem, 2vw, 1.4rem)',
+                            fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
                             color: c.num, lineHeight: 1.05,
-                            letterSpacing: '0.04em',
+                            letterSpacing: '0.02em',
                             fontVariantNumeric: 'tabular-nums',
                           }}>
                             {t.ticket_number}
                           </div>
                           {hora && (
                             <div style={{
+                              fontFamily: '"Poppins", sans-serif',
                               fontSize: 10, fontWeight: 700,
-                              color: c.time, letterSpacing: '0.06em', marginTop: 3,
+                              color: c.time, letterSpacing: '0.04em', marginTop: 4,
                             }}>
                               {hora}
                             </div>
