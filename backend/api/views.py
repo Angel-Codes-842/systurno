@@ -394,27 +394,7 @@ class CheckinViewSet(viewsets.ModelViewSet):
         return Response(stats)
 
 
-class KioskCheckinView(APIView):
-    """
-    Vista para crear check-ins desde el kiosko.
-    Endpoint público (sin autenticación requerida).
-    """
-    permission_classes = [permissions.AllowAny]
-    
-    def post(self, request):
-        """
-        Crear un nuevo check-in desde el kiosko.
-        POST /api/kiosk/checkin/
-        """
-        serializer = CheckinCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        checkin = serializer.save()
-        
-        # Notificar via WebSocket
-        notify_new_checkin(checkin)
-        
-        response_serializer = CheckinSerializer(checkin)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 class CurrentUserView(APIView):

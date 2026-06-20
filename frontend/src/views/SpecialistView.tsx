@@ -44,12 +44,7 @@ import type { Ticket, Slider, TicketStats } from '@/types';
 
 const WS_URL = '/ws/checkins/';
 
-/* ── Paleta por servicio (idéntica a Display y Kiosk) ── */
-const SVC: Record<string, { label: string; bg: string; num: string; border: string }> = {
-  ANALYSIS: { label: 'Análisis',    bg: '#EDE9FE', num: '#4C1D95', border: '#7C3AED' },
-  RESULTS:  { label: 'Resultados',  bg: '#DCFCE7', num: '#14532D', border: '#16A34A' },
-  BUDGET:   { label: 'Presupuesto', bg: '#FEF3C7', num: '#78350F', border: '#D97706' },
-};
+import { SERVICES_CONFIG as SVC } from '@/utils/constants';
 
 function fmtTime(iso: string | null) {
   if (!iso) return '—';

@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 import { generateTicket } from '@/services/api';
 import { getServiceTypeLabel } from '@/utils/format';
+import { useClock } from '@/hooks/useClock';
 import type { Ticket, ServiceType } from '@/types';
 
 /* ── Configuración por servicio ── */
@@ -50,29 +51,7 @@ const SVC: Record<ServiceType, {
 
 const SERVICES: ServiceType[] = ['ANALYSIS', 'RESULTS', 'BUDGET'];
 
-/* ── Reloj ── */
-function pad(n: number) { return String(n).padStart(2, '0'); }
-function useClock() {
-  const [s, set] = useState({ date: '', time: '' });
-  useEffect(() => {
-    const tick = () => {
-      const n = new Date();
-      const weekday = n.toLocaleDateString('es-AR', { weekday: 'long' });
-      const day = n.getDate();
-      const month = n.toLocaleDateString('es-AR', { month: 'long' });
-      const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-      const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
-      set({
-        date: `${capWeekday}, ${day} De ${capMonth}`,
-        time: `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`,
-      });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-  return s;
-}
+
 
 /* ════════════════════════════════════════════════════════════════ */
 export function KioskView() {

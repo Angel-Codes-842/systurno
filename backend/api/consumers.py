@@ -78,32 +78,4 @@ class CheckinConsumer(AsyncWebsocketConsumer):
         }))
 
 
-class DisplayConsumer(AsyncWebsocketConsumer):
-    """Consumer para la pantalla de sala de espera."""
-    
-    async def connect(self):
-        await self.channel_layer.group_add("display", self.channel_name)
-        await self.accept()
-    
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard("display", self.channel_name)
-    
-    async def ticket_called(self, event):
-        """Ticket llamado."""
-        await self.send(text_data=json.dumps({
-            'type': 'ticket_called',
-            'ticket': event['ticket'],
-        }))
-    
-    async def call_patient(self, event):
-        """Paciente llamado."""
-        await self.send(text_data=json.dumps({
-            'type': 'call_patient',
-            'checkin': event['checkin']
-        }))
 
-    async def slider_update(self, event):
-        """Sliders actualizados - notificar para recargar."""
-        await self.send(text_data=json.dumps({
-            'type': 'slider_update',
-        }))
