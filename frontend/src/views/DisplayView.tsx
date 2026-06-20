@@ -38,10 +38,10 @@ function playDing() {
     if (!AC) return;
     const ctx = new AC();
 
-    const hit = (freq: number, start: number, dur: number, vol: number) => {
+    const hit = (freq: number, start: number, dur: number, vol: number, type: 'sine' | 'triangle' = 'sine') => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sine';
+      osc.type = type;
       osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
       gain.gain.setValueAtTime(vol, ctx.currentTime + start);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
@@ -51,11 +51,17 @@ function playDing() {
       osc.stop(ctx.currentTime + start + dur);
     };
 
-    // Campanazo de hospital: dos notas fuertes
-    hit(880, 0.0,  1.2, 0.55);   // A5 — primer ding
-    hit(660, 0.0,  1.0, 0.30);   // E5 — armónico
-    hit(880, 0.55, 1.0, 0.40);   // segundo ding
-    hit(660, 0.55, 0.8, 0.20);
+    // Chime premium digital: Dos acordes mayores brillantes en arpegio (A5 + C#6 -> C#6 + E6)
+    // Combinación de onda triangular (armónicos brillantes para TV) + senoidal (cuerpo suave)
+    hit(880.00,  0.0,  1.0, 0.25, 'triangle');
+    hit(880.00,  0.0,  1.0, 0.25, 'sine');
+    hit(1109.73, 0.0,  1.0, 0.20, 'triangle');
+    hit(1109.73, 0.0,  1.0, 0.20, 'sine');
+
+    hit(1109.73, 0.35, 1.4, 0.25, 'triangle');
+    hit(1109.73, 0.35, 1.4, 0.25, 'sine');
+    hit(1318.51, 0.35, 1.4, 0.20, 'triangle');
+    hit(1318.51, 0.35, 1.4, 0.20, 'sine');
   } catch { /* ignore */ }
 }
 
@@ -78,7 +84,7 @@ async function announceTicket(ticketNumber: string) {
     playDing();
     await new Promise(r => setTimeout(r, 1800)); // esperar que el ding termine
     await speakTTS(phrase, getTTS);
-    await new Promise(r => setTimeout(r, 900));
+    await new Promise(r => setTimeout(r, 350));  // pausa más breve entre llamados
     await speakTTS(phrase, getTTS);
   } finally {
     announceTicket._busy = false;
