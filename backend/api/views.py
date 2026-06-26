@@ -107,7 +107,7 @@ def text_to_speech(request):
     # Definir rutas para el ejecutable y modelo de Piper
     backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     piper_exe = os.path.join(backend_dir, "piper", "piper.exe")
-    model_path = os.path.join(backend_dir, "piper", "voices", "es_MX-claude-high.onnx")
+    model_path = os.path.join(backend_dir, "piper", "voices", "es_ES-davefx-medium.onnx")
 
     # Intentar generar el audio de forma local y offline con Piper
     if os.path.exists(piper_exe) and os.path.exists(model_path):
@@ -116,7 +116,7 @@ def text_to_speech(request):
                 temp_wav_path = temp_wav.name
 
             p = subprocess.Popen(
-                [piper_exe, "--model", model_path, "--output_file", temp_wav_path],
+                [piper_exe, "--model", model_path, "--output_file", temp_wav_path, "--length_scale", "0.85"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE

@@ -84,7 +84,7 @@ async function announceTicket(ticketNumber: string) {
     playDing();
     await new Promise(r => setTimeout(r, 1800)); // esperar que el ding termine
     await speakTTS(phrase, getTTS);
-    await new Promise(r => setTimeout(r, 350));  // pausa más breve entre llamados
+    await new Promise(r => setTimeout(r, 150));  // pausa extremadamente breve entre llamados
     await speakTTS(phrase, getTTS);
   } finally {
     announceTicket._busy = false;
