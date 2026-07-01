@@ -116,7 +116,7 @@ def text_to_speech(request):
                 temp_wav_path = temp_wav.name
 
             p = subprocess.Popen(
-                [piper_exe, "--model", model_path, "--output_file", temp_wav_path, "--length_scale", "0.85"],
+                [piper_exe, "--model", model_path, "--output_file", temp_wav_path, "--length_scale", "1.0"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE

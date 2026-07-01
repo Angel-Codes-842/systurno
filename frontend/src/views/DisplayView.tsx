@@ -31,7 +31,15 @@ import type { Slider, Ticket } from '@/types';
 
 const WS_URL = '/ws/checkins/';
 
-/* ── Anuncio de turno: ding + TTS x2 ── */
+/* ── Configuración de anuncio — ajustar aquí ── */
+const ANNOUNCE = {
+  dingToSpeechMs:  900,   // ms entre el ding y el inicio de la voz
+  betweenRepeatMs: 600,   // ms de pausa entre 1ª y 2ª repetición
+  speechRate:      1.0,   // velocidad de la voz (1.0 = natural, sin aceleración)
+  repeatCount:     2,     // cuántas veces se repite el anuncio
+};
+
+/* ── Anuncio de turno: ding + TTS ── */
 function playDing() {
   try {
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -65,10 +73,11 @@ function playDing() {
   } catch { /* ignore */ }
 }
 
-function speakTTS(text: string, getTTSUrl: (t: string) => string): Promise<void> {
+function speakTTS(text: string, getTTSUrl: (t: string) => string, rate: number): Promise<void> {
   return new Promise((resolve) => {
     const audio = new Audio(getTTSUrl(text));
     audio.volume = 1.0;
+    audio.playbackRate = rate;
     audio.onended = () => resolve();
     audio.onerror  = () => resolve();
     audio.play().catch(() => resolve());
@@ -80,12 +89,15 @@ async function announceTicket(ticketNumber: string) {
   announceTicket._busy = true;
   window.dispatchEvent(new CustomEvent('ticket-announcement-start'));
   try {
-    const phrase = `Turno ${ticketNumber}, por favor pase a recepción`;
+    const phrase = `Turno ${ticketNumber}, pase a recepción`;
     playDing();
-    await new Promise(r => setTimeout(r, 1800)); // esperar que el ding termine
-    await speakTTS(phrase, getTTS);
-    await new Promise(r => setTimeout(r, 150));  // pausa extremadamente breve entre llamados
-    await speakTTS(phrase, getTTS);
+    await new Promise(r => setTimeout(r, ANNOUNCE.dingToSpeechMs));
+    for (let i = 0; i < ANNOUNCE.repeatCount; i++) {
+      await speakTTS(phrase, getTTS, ANNOUNCE.speechRate);
+      if (i < ANNOUNCE.repeatCount - 1) {
+        await new Promise(r => setTimeout(r, ANNOUNCE.betweenRepeatMs));
+      }
+    }
   } finally {
     announceTicket._busy = false;
     window.dispatchEvent(new CustomEvent('ticket-announcement-end'));

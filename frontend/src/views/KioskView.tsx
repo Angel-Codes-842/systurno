@@ -401,40 +401,29 @@ export function KioskView() {
       {/* ── TICKET TÉRMICO 80mm ── */}
       {ticket && (
         <div id="print-ticket">
-          <div className="tk-brand">BIOGENIC</div>
-          <div className="tk-sub">Diagnóstico Laboratorial</div>
-          <div className="tk-sub">del Grupo San Antonio</div>
-          <div className="tk-divider">{'- '.repeat(24)}</div>
-          <div className="tk-service">{getServiceTypeLabel(ticket.service_type)}</div>
-          <div className="tk-divider">{'-'.repeat(32)}</div>
-          <div className="tk-label">SU NÚMERO DE ATENCIÓN</div>
-          <div className="tk-number">{ticket.ticket_number}</div>
-          <div className="tk-divider">{'-'.repeat(32)}</div>
-          <div className="tk-row">
-            <span>Fecha:</span>
-            <span>{new Date(ticket.created_at).toLocaleDateString('es-AR')}</span>
+          <div className="tk-header">
+            <div className="tk-brand">BIOGENIC</div>
+            <div className="tk-sub">Diagnóstico Lab · Grupo San Antonio</div>
           </div>
-          <div className="tk-row">
-            <span>Hora:</span>
-            <span>{new Date(ticket.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
+          <div className="tk-service-box">
+            <div className="tk-service">{getServiceTypeLabel(ticket.service_type)}</div>
           </div>
-          <div className="tk-divider">{'- '.repeat(24)}</div>
-          <div className="tk-footer">Por favor aguarde en la</div>
-          <div className="tk-footer">sala de espera a ser llamado</div>
-          <div className="tk-footer">en la pantalla principal.</div>
-          <div className="tk-footer" style={{ marginTop: 6 }}>¡Muchas gracias!</div>
-          <div className="tk-divider" style={{ marginTop: 10 }}>{'* '.repeat(16)}</div>
+          <div className="tk-number-block">
+            <div className="tk-number">{ticket.ticket_number}</div>
+            <div className="tk-label">SU TURNO</div>
+          </div>
+          <div className="tk-meta">
+            <span>{new Date(ticket.created_at).toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+            <span>{new Date(ticket.created_at).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', hour12: false })}</span>
+          </div>
+          <div className="tk-footer">Aguarde a ser llamado en pantalla · ¡Gracias!</div>
         </div>
       )}
 
       {/* ── CSS GLOBAL: pantalla + impresión ── */}
       <style>{`
-        /* Ocultar ticket en pantalla */
         #print-ticket {
-          visibility: hidden;
-          position: absolute;
-          top: -9999px;
-          pointer-events: none;
+          display: none;
         }
 
         @media print {
@@ -443,61 +432,91 @@ export function KioskView() {
             margin: 0;
           }
 
-          /* Ocultar todo con visibility (sobreescribible en hijos) */
-          * { visibility: hidden !important; }
-
-          #print-ticket,
-          #print-ticket * {
-            visibility: visible !important;
+          /* Firefox: ocultar todo con display:none, no visibility */
+          body > * {
+            display: none !important;
           }
 
+          /* Mostrar solo el ticket en flujo normal (sin position:fixed)
+             Firefox necesita flujo de documento para calcular el alto auto */
           #print-ticket {
             display: block !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
+            position: static !important;
             width: 72mm;
-            padding: 4mm;
+            padding: 2mm 3mm 2mm;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 11pt;
             color: #000 !important;
             background: #fff !important;
+            box-sizing: border-box;
+            line-height: 1;
           }
 
+          .tk-header {
+            text-align: center;
+            border-bottom: 1.5px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 3px;
+          }
           .tk-brand {
-            font-size: 18pt; font-weight: 900;
-            text-align: center; letter-spacing: 0.15em;
-            margin-bottom: 2px;
+            font-size: 16pt;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            line-height: 1;
           }
           .tk-sub {
-            font-size: 8pt; text-align: center;
-            letter-spacing: 0.05em;
+            font-size: 6pt;
+            line-height: 1;
+            margin-top: 1px;
           }
-          .tk-divider {
-            font-size: 9pt; text-align: center;
-            margin: 5px 0; letter-spacing: -1px; word-spacing: -3px;
+
+          .tk-service-box {
+            border: 1px solid #000;
+            padding: 1px 3px;
+            margin-bottom: 3px;
+            text-align: center;
           }
           .tk-service {
-            font-size: 11pt; font-weight: 700;
-            text-align: center; text-transform: uppercase;
-            letter-spacing: 0.08em; margin: 4px 0;
+            font-size: 9.5pt;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            line-height: 1;
           }
-          .tk-label {
-            font-size: 8pt; text-align: center;
-            letter-spacing: 0.1em; margin-bottom: 4px;
+
+          .tk-number-block {
+            text-align: center;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 2px 0;
+            margin-bottom: 3px;
           }
           .tk-number {
-            font-family: 'GoodTimeGrotesk', sans-serif;
-            font-size: 48pt; font-weight: 900;
-            text-align: center; letter-spacing: 0.05em;
-            line-height: 1; margin: 6px 0;
+            font-size: 22pt;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            line-height: 1;
           }
-          .tk-row {
-            display: flex; justify-content: space-between;
-            font-size: 9pt; margin: 2px 4px;
+          .tk-label {
+            font-size: 6pt;
+            letter-spacing: 0.12em;
+            line-height: 1;
           }
+
+          .tk-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            font-weight: 700;
+            line-height: 1;
+            border-bottom: 1px dashed #666;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+          }
+
           .tk-footer {
-            font-size: 8.5pt; text-align: center; margin: 1px 0;
+            font-size: 6.5pt;
+            text-align: center;
+            line-height: 1;
           }
         }
       `}</style>

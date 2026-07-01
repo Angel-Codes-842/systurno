@@ -7,13 +7,13 @@ export function useClock() {
   useEffect(() => {
     const tick = () => {
       const n = new Date();
-      const weekday = n.toLocaleDateString('es-AR', { weekday: 'long' });
+      const weekday = n.toLocaleDateString('es-PY', { weekday: 'long' });
       const day = n.getDate();
-      const month = n.toLocaleDateString('es-AR', { month: 'long' });
+      const month = n.toLocaleDateString('es-PY', { month: 'long' });
       const capWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
       const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
       set({
-        date: `${capWeekday}, ${day} De ${capMonth}`,
+        date: `${capWeekday}, ${day} de ${capMonth}`,
         time: `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`,
       });
     };
