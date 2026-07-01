@@ -152,3 +152,5 @@ echo URLs en red local:
 echo   http://MI_IP:8000/kiosk       ^(accede desde otros equipos^)
 echo   http://MI_IP:3000/kiosk       ^(solo si Vite esta activo^)
 echo.
+pause
+
