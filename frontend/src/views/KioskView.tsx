@@ -104,7 +104,7 @@ export function KioskView() {
   const svc = ticket ? SVC[ticket.service_type] : null;
 
   return (
-    <div style={{
+    <div className="kiosk-root" style={{
       position: 'relative',
       height: '100dvh', width: '100vw',
       display: 'flex', flexDirection: 'column',
@@ -112,6 +112,13 @@ export function KioskView() {
       overflow: 'hidden',
       userSelect: 'none',
     }}>
+      <div className="kiosk-screen" style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+      }}>
 
       {/* Video de fondo — turnero.mp4 */}
       <video
@@ -389,14 +396,14 @@ export function KioskView() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{
+      <div style={{
         flexShrink: 0, zIndex: 2, textAlign: 'center',
         padding: '12px 0', color: 'rgba(255,255,255,0.2)',
         fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
         borderTop: '1px solid rgba(255,255,255,0.06)',
       }}>
         © {new Date().getFullYear()} BIOGENIC — Diagnóstico Laboratorial del Grupo San Antonio
-      </footer>
+      </div>
 
       {/* ── TICKET TÉRMICO 80mm ── */}
       {ticket && (
@@ -432,13 +439,23 @@ export function KioskView() {
             margin: 0;
           }
 
-          /* Firefox: ocultar todo con display:none, no visibility */
-          body > * {
+          /* Ocultar interfaz del kiosco sin afectar la raíz de React */
+          .kiosk-screen {
             display: none !important;
           }
 
-          /* Mostrar solo el ticket en flujo normal (sin position:fixed)
-             Firefox necesita flujo de documento para calcular el alto auto */
+          /* Anular estilos del raíz para que no corte por overflow/altura */
+          .kiosk-root {
+            height: auto !important;
+            width: auto !important;
+            overflow: visible !important;
+            position: static !important;
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+
+          /* Mostrar el ticket en flujo normal para cálculo de alto auto */
           #print-ticket {
             display: block !important;
             position: static !important;
