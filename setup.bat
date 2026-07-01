@@ -11,7 +11,7 @@ echo ------------------------------------------
 echo.
 
 :: --- Verificar Python --------------------------------------------------------
-python --version >nul 2>&1
+where python >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python no encontrado.
     echo Descargalo desde: https://www.python.org/downloads/
@@ -23,7 +23,7 @@ for /f "tokens=2" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
 echo [OK] Python %PY_VER%
 
 :: --- Verificar Node.js -------------------------------------------------------
-node --version >nul 2>&1
+where node >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Node.js no encontrado.
     echo Descargalo desde: https://nodejs.org/  ^(version 20 o superior^)
@@ -33,6 +33,14 @@ if errorlevel 1 (
 for /f %%v in ('node --version 2^>^&1') do set NODE_VER=%%v
 echo [OK] Node.js %NODE_VER%
 
+:: --- Verificar npm ----------------------------------------------------------
+where npm >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] npm no encontrado.
+    echo Asegurate de que Node.js este correctamente instalado.
+    pause
+    exit /b 1
+)
 for /f %%v in ('npm --version 2^>^&1') do set NPM_VER=%%v
 echo [OK] npm %NPM_VER%
 
