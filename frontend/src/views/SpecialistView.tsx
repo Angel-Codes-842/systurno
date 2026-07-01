@@ -48,7 +48,7 @@ import { SERVICES_CONFIG as SVC } from '@/utils/constants';
 
 function fmtTime(iso: string | null) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  return new Date(iso).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 /* ════════════════════════════════════════════════════════════════ */

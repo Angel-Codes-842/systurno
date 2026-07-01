@@ -405,6 +405,8 @@ export function KioskView() {
         © {new Date().getFullYear()} BIOGENIC — Diagnóstico Laboratorial del Grupo San Antonio
       </div>
 
+      </div>
+
       {/* ── TICKET TÉRMICO 80mm ── */}
       {ticket && (
         <div id="print-ticket">
