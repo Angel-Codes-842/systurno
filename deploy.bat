@@ -97,7 +97,7 @@ cd frontend
 :: Instalar dependencias si faltan
 if not exist "node_modules" (
     echo [*] Instalando dependencias de Node.js...
-    call npm install
+    cmd /c npm install
     if errorlevel 1 (
         echo [ERROR] Fallo npm install.
         pause & exit /b 1
@@ -105,7 +105,7 @@ if not exist "node_modules" (
 )
 
 :: Siempre hacer build fresco en deploy
-call npm run build
+cmd /c npm run build
 if errorlevel 1 (
     echo [ERROR] Fallo el build del frontend.
     pause & exit /b 1
@@ -165,3 +165,5 @@ echo   Reiniciar:    schtasks /run /tn "SisTurnos"
 echo   Detener:      taskkill /f /im python.exe
 echo   Log:          %PROJ_DIR%\systurno.log
 echo.
+pause
+
