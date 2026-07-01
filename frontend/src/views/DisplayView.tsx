@@ -79,9 +79,31 @@ function speakTTS(text: string, getTTSUrl: (t: string) => string, rate: number):
     audio.volume = 1.0;
     audio.playbackRate = rate;
     audio.onended = () => resolve();
-    audio.onerror  = () => resolve();
-    audio.play().catch(() => resolve());
+    audio.onerror  = () => {
+      console.warn("La API de audio de Piper/gTTS falló. Usando SpeechSynthesis nativo del navegador...");
+      fallbackSpeechSynthesis(text, rate, resolve);
+    };
+    audio.play().catch((err) => {
+      console.warn("La reproducción del audio falló o fue bloqueada. Usando SpeechSynthesis nativo...", err);
+      fallbackSpeechSynthesis(text, rate, resolve);
+    });
   });
+}
+
+function fallbackSpeechSynthesis(text: string, rate: number, onComplete: () => void) {
+  if ('speechSynthesis' in window) {
+    // Si ya está hablando, cancelar para no encolar audios lagueados
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = rate;
+    utterance.onend = () => onComplete();
+    utterance.onerror = () => onComplete();
+    window.speechSynthesis.speak(utterance);
+  } else {
+    onComplete();
+  }
 }
 
 async function announceTicket(ticketNumber: string) {

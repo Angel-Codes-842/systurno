@@ -137,9 +137,23 @@ def text_to_speech(request):
         except Exception as e:
             print(f"Excepción al ejecutar Piper local: {e}")
 
-    # Si llega aquí, significa que falló Piper y no hay fallback
+    # Fallback a gTTS (Google Text-to-Speech) si Piper no está disponible
+    try:
+        from gtts import gTTS
+        import io
+        print(f"Piper no disponible. Usando fallback gTTS para: '{text}'")
+        tts = gTTS(text=text, lang=lang)
+        fp = io.BytesIO()
+        tts.write_to_fp(fp)
+        fp.seek(0)
+        audio_data = fp.read()
+        return HttpResponse(audio_data, content_type='audio/mpeg')
+    except Exception as e:
+        print(f"Error al generar fallback gTTS: {e}")
+
+    # Si llega aquí, significa que falló Piper y gTTS
     return Response(
-        {'detail': 'Error al generar el audio localmente con la voz seleccionada (Piper).'},
+        {'detail': 'Error al generar el audio localmente o vía web.'},
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
 
