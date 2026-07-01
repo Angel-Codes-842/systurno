@@ -33,9 +33,9 @@ const WS_URL = '/ws/checkins/';
 
 /* ── Configuración de anuncio — ajustar aquí ── */
 const ANNOUNCE = {
-  dingToSpeechMs:  900,   // ms entre el ding y el inicio de la voz
-  betweenRepeatMs: 600,   // ms de pausa entre 1ª y 2ª repetición
-  speechRate:      1.0,   // velocidad de la voz (1.0 = natural, sin aceleración)
+  dingToSpeechMs:  450,   // ms entre el ding y el inicio de la voz (antes 900)
+  betweenRepeatMs: 400,   // ms de pausa entre 1ª y 2ª repetición (antes 600)
+  speechRate:      0.88,  // velocidad de la voz (0.88 = más pausada y clara, antes 1.0)
   repeatCount:     2,     // cuántas veces se repite el anuncio
 };
 
