@@ -118,12 +118,12 @@ cd frontend
 
 :: Instalar dependencias Node
 echo [*] Instalando dependencias de Node.js...
-call npm install
+cmd /c npm install
 if errorlevel 1 (
     echo [!] Primer intento fallido, reintentando tras limpiar...
     if exist "node_modules" rmdir /s /q node_modules
     if exist "package-lock.json" del /f package-lock.json
-    call npm install
+    cmd /c npm install
     if errorlevel 1 (
         echo [ERROR] No se pudieron instalar las dependencias de npm.
         pause
@@ -135,7 +135,7 @@ echo [OK] Dependencias Node instaladas
 
 :: Build del frontend (para acceder desde otros equipos via Django :8000)
 echo [*] Compilando Frontend...
-call npm run build
+cmd /c npm run build
 if errorlevel 1 (
     echo [!] Fallo el build, pero podés usar Vite en modo dev con start.bat
 ) else (
