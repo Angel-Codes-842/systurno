@@ -30,7 +30,13 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
     let wsUrl = url;
     if (url.startsWith('/')) {
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.host;
+      let host = window.location.host;
+      
+      // Si el frontend corre en el puerto 3000 (Vite), redirigir directamente al puerto 8000 (Django Channels)
+      if (host.includes(':3000')) {
+        host = host.replace(':3000', ':8000');
+      }
+      
       wsUrl = `${protocol}//${host}${url}`;
     }
 
