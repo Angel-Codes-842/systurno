@@ -209,7 +209,7 @@ export function DisplayView() {
 
   const slide  = useMemo(() => sliders[idx] ?? null, [idx, sliders]);
   const latest = tickets[0] ?? null;
-  const prev   = tickets.slice(1, 5);
+  const prev   = tickets.slice(1, 4);
 
   // Pausar video de fondo si el slider actual está reproduciendo un video (para evitar doble decodificación por hardware lagueada)
   useEffect(() => {
