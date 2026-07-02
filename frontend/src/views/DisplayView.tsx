@@ -389,13 +389,16 @@ export function DisplayView() {
                   <>
                     <span style={{
                       fontFamily: '"GoodTimeGrotesk", sans-serif',
-                      fontSize: 'clamp(4.2rem, 8vw, 7.2rem)',
-                      fontWeight: 900,
+                      fontSize: 'clamp(6.0rem, 11.5vw, 10.0rem)',
+                      fontWeight: 950,
                       color: '#1E293B',
-                      lineHeight: 1.0,
-                      letterSpacing: '0.02em',
+                      lineHeight: 0.9,
+                      letterSpacing: '0.04em',
                       fontVariantNumeric: 'tabular-nums',
-                      marginBottom: 12,
+                      marginBottom: 4,
+                      display: 'block',
+                      transform: 'scaleX(1.22)',
+                      transformOrigin: 'center',
                     }}>
                       {latest.ticket_number}
                     </span>
@@ -403,9 +406,12 @@ export function DisplayView() {
                       fontFamily: '"Poppins", sans-serif',
                       color: '#488E3E',
                       fontWeight: 900,
-                      fontSize: 26,
-                      letterSpacing: '0.16em',
+                      fontSize: 32,
+                      letterSpacing: '0.22em',
                       textTransform: 'uppercase',
+                      marginTop: 8,
+                      transform: 'scaleX(1.06)',
+                      transformOrigin: 'center',
                     }}>
                       Pase a Recepción
                     </span>
@@ -445,7 +451,7 @@ export function DisplayView() {
                 Anteriores
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '65%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '92%', overflow: 'hidden' }}>
                 {prev.length === 0
                   ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
                       Los turnos anteriores aparecerán aquí
@@ -466,26 +472,30 @@ export function DisplayView() {
                         <div key={t.id} style={{
                           background: 'linear-gradient(135deg, #e0e7ff 0%, #fef9c3 100%)',
                           borderRadius: 14,
-                          padding: '10px 10px 8px',
+                          padding: '14px 10px 10px',
                           textAlign: 'center',
                           border: '1px solid rgba(0,0,0,0.06)',
                           boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
                         }}>
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
-                            fontWeight: 900,
-                            fontSize: 'clamp(2.0rem, 3.4vw, 2.8rem)',
+                            fontWeight: 950,
+                            fontSize: 'clamp(2.8rem, 4.8vw, 3.8rem)',
                             color: '#1E293B', lineHeight: 1.0,
-                            letterSpacing: '0.02em',
+                            letterSpacing: '0.04em',
                             fontVariantNumeric: 'tabular-nums',
+                            transform: 'scaleX(1.18)',
+                            transformOrigin: 'center',
                           }}>
                             {t.ticket_number}
                           </div>
                           {hora && (
                             <div style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontSize: 13.5, fontWeight: 800,
-                              color: '#488E3E', letterSpacing: '0.04em', marginTop: 5,
+                              fontSize: 16.5, fontWeight: 900,
+                              color: '#488E3E', letterSpacing: '0.08em', marginTop: 8,
+                              transform: 'scaleX(1.05)',
+                              transformOrigin: 'center',
                             }}>
                               {hora}
                             </div>
