@@ -152,13 +152,10 @@ export function KioskView() {
         flexShrink: 0, height: 76, zIndex: 2,
         background: 'transparent',
         display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-end',
         padding: '0 32px',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
-        {/* Logo Biogenic */}
-        <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 56, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
-
         {/* Fecha + Hora — píldora (estilo cápsulas superpuestas) */}
         <div style={{
           display: 'inline-flex',
@@ -212,6 +209,36 @@ export function KioskView() {
         {phase === 'menu' && (
           <Fade in timeout={300}>
             <div style={{ width: '100%', maxWidth: 1000 }}>
+              {/* Bienvenido + Logo */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 44,
+              }}>
+                <h2 style={{
+                  margin: '0 0 16px 0',
+                  color: '#ffffff',
+                  fontSize: 'clamp(2.4rem, 4.5vw, 3.2rem)',
+                  fontWeight: 900,
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  textShadow: '0 2px 10px rgba(0,0,0,0.35)',
+                }}>
+                  ¡Bienvenido!
+                </h2>
+                <img
+                  src="/logo_biogenic.png"
+                  alt="Biogenic"
+                  style={{
+                    height: 106,
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))',
+                  }}
+                />
+              </div>
+
               {/* Título */}
               <div style={{ textAlign: 'center', marginBottom: 36 }}>
                 <h1 style={{
