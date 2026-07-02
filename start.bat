@@ -87,6 +87,14 @@ echo   Display:     http://%LOCAL_IP%:%FRONTEND_PORT%/display
 echo.
 echo Cierra las 2 ventanas (Backend + Frontend) para detener.
 echo.
+
+:: Abrir kiosko en Firefox (modo kiosko)
+if exist "C:\Program Files\Mozilla Firefox\firefox.exe" (
+    start "" "C:\Program Files\Mozilla Firefox\firefox.exe" --kiosk "http://localhost:%FRONTEND_PORT%/kiosk"
+) else if exist "C:\Program Files (x86)\Mozilla Firefox\firefox.exe" (
+    start "" "C:\Program Files (x86)\Mozilla Firefox\firefox.exe" --kiosk "http://localhost:%FRONTEND_PORT%/kiosk"
+)
+
 pause
 goto :eof
 
