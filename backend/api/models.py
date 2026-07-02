@@ -393,7 +393,8 @@ class Voice(models.Model):
     """
     name = models.CharField(
         max_length=100,
-        verbose_name='Nombre de la voz'
+        verbose_name='Nombre de la voz',
+        blank=True
     )
     onnx_file = models.FileField(
         upload_to='voices/',
@@ -421,6 +422,11 @@ class Voice(models.Model):
         return f"{self.name} {'(Activa)' if self.is_active else ''}"
 
     def save(self, *args, **kwargs):
+        # Autogenerar el nombre de la voz a partir del archivo .onnx si viene vacío
+        if not self.name and self.onnx_file:
+            import os
+            self.name = os.path.splitext(os.path.basename(self.onnx_file.name))[0]
+
         # Si esta voz se marca como activa, desactivar las demás voces automáticamente
         if self.is_active:
             Voice.objects.filter(is_active=True).exclude(id=self.id).update(is_active=False)

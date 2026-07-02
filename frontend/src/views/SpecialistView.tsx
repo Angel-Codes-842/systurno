@@ -916,7 +916,6 @@ function VoicesTab() {
   const { enqueueSnackbar } = useSnackbar();
 
   // Formulario de subida
-  const [name, setName] = useState('');
   const [onnxFile, setOnnxFile] = useState<File | null>(null);
   const [jsonFile, setJsonFile] = useState<File | null>(null);
 
@@ -938,21 +937,19 @@ function VoicesTab() {
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !onnxFile || !jsonFile) {
-      enqueueSnackbar('Por favor, completa todos los campos y selecciona ambos archivos.', { variant: 'warning' });
+    if (!onnxFile || !jsonFile) {
+      enqueueSnackbar('Por favor, selecciona ambos archivos.', { variant: 'warning' });
       return;
     }
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('name', name);
     formData.append('onnx_file', onnxFile);
     formData.append('json_file', jsonFile);
 
     try {
       await uploadVoice(formData);
       enqueueSnackbar('Voz cargada correctamente', { variant: 'success' });
-      setName('');
       setOnnxFile(null);
       setJsonFile(null);
       
@@ -1038,27 +1035,6 @@ function VoicesTab() {
 
             <form onSubmit={handleUpload}>
               <Stack gap={2.5}>
-                <Box>
-                  <Typography fontSize={13} fontWeight={700} color="#475569" mb={0.8}>
-                    Nombre descriptivo de la voz:
-                  </Typography>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Español Latino Masculino - Juan"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px',
-                      borderRadius: '10px',
-                      border: '1.5px solid #CBD5E1',
-                      fontSize: '14px',
-                      fontFamily: 'inherit',
-                      outline: 'none',
-                    }}
-                  />
-                </Box>
 
                 <Box>
                   <Typography fontSize={13} fontWeight={700} color="#475569" mb={0.8}>

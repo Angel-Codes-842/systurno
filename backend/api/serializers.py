@@ -223,6 +223,7 @@ class SliderSerializer(serializers.ModelSerializer):
 
 class VoiceSerializer(serializers.ModelSerializer):
     """Serializer para el modelo Voice."""
+    name = serializers.CharField(required=False, allow_blank=True)
     onnx_url = serializers.SerializerMethodField()
     json_url = serializers.SerializerMethodField()
 
