@@ -32,3 +32,15 @@ export interface TicketStats {
   attended: number;
   canceled: number;
 }
+
+export interface Voice {
+  id: number;
+  name: string;
+  onnx_file: string;
+  onnx_url: string | null;
+  json_file: string;
+  json_url: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+

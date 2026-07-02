@@ -385,3 +385,44 @@ class Slider(models.Model):
     
     def __str__(self):
         return f"{self.title} ({self.get_media_type_display()})"
+
+
+class Voice(models.Model):
+    """
+    Modelo para configurar voces personalizadas de Piper (archivos .onnx y .onnx.json).
+    """
+    name = models.CharField(
+        max_length=100,
+        verbose_name='Nombre de la voz'
+    )
+    onnx_file = models.FileField(
+        upload_to='voices/',
+        verbose_name='Archivo .onnx'
+    )
+    json_file = models.FileField(
+        upload_to='voices/',
+        verbose_name='Archivo .json'
+    )
+    is_active = models.BooleanField(
+        default=False,
+        verbose_name='Activa'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de creación'
+    )
+
+    class Meta:
+        verbose_name = 'Voz'
+        verbose_name_plural = 'Voces'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} {'(Activa)' if self.is_active else ''}"
+
+    def save(self, *args, **kwargs):
+        # Si esta voz se marca como activa, desactivar las demás voces automáticamente
+        if self.is_active:
+            Voice.objects.filter(is_active=True).exclude(id=self.id).update(is_active=False)
+        super().save(*args, **kwargs)
+

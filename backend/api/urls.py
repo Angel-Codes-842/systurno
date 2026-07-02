@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
 
 from .views import (
     UserViewSet, PatientViewSet, CheckinViewSet, TicketViewSet,
-    SliderViewSet, list_specialists, CurrentUserView,
+    SliderViewSet, VoiceViewSet, list_specialists, CurrentUserView,
     text_to_speech,
 )
 
@@ -18,6 +18,7 @@ router.register(r'patients', PatientViewSet, basename='patient')
 router.register(r'checkins', CheckinViewSet, basename='checkin')
 router.register(r'tickets', TicketViewSet, basename='ticket')
 router.register(r'sliders', SliderViewSet, basename='slider')
+router.register(r'voices', VoiceViewSet, basename='voice')
 
 urlpatterns = [
     # Router URLs

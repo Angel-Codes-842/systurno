@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Patient, Checkin, Ticket, Slider
+from .models import Patient, Checkin, Ticket, Slider, Voice
 
 User = get_user_model()
 
@@ -219,3 +219,28 @@ class SliderSerializer(serializers.ModelSerializer):
         if obj.video:
             return obj.video.url
         return None
+
+
+class VoiceSerializer(serializers.ModelSerializer):
+    """Serializer para el modelo Voice."""
+    onnx_url = serializers.SerializerMethodField()
+    json_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Voice
+        fields = [
+            'id', 'name', 'onnx_file', 'onnx_url',
+            'json_file', 'json_url', 'is_active', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+    def get_onnx_url(self, obj):
+        if obj.onnx_file:
+            return obj.onnx_file.url
+        return None
+
+    def get_json_url(self, obj):
+        if obj.json_file:
+            return obj.json_file.url
+        return None
+

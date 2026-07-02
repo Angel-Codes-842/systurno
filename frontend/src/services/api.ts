@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ServiceType, Ticket, Slider, TicketStats } from '@/types';
+import type { ServiceType, Ticket, Slider, TicketStats, Voice } from '@/types';
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string) ?? '';
 
@@ -96,6 +96,34 @@ export async function updateSlider(id: number, data: Partial<Slider>): Promise<S
 export function getTTS(text: string): string {
   const encoded = encodeURIComponent(text);
   return `${BASE_URL}/api/tts/?text=${encoded}`;
+}
+
+// --- Voces ---
+
+export async function getVoices(): Promise<Voice[]> {
+  const response = await api.get<Voice[]>('/api/voices/');
+  return response.data;
+}
+
+export async function uploadVoice(formData: FormData): Promise<Voice> {
+  const response = await api.post<Voice>('/api/voices/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+export async function activateVoice(id: number): Promise<{ status: string }> {
+  const response = await api.post<{ status: string }>(`/api/voices/${id}/activate/`);
+  return response.data;
+}
+
+export async function deleteVoice(id: number): Promise<void> {
+  await api.delete(`/api/voices/${id}/`);
+}
+
+export function getVoiceTestAudioUrl(id: number, text: string): string {
+  const encoded = encodeURIComponent(text);
+  return `${BASE_URL}/api/voices/${id}/test_audio/?text=${encoded}`;
 }
 
 export default api;

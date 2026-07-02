@@ -18,13 +18,13 @@ def get_today_time_range():
     )
     return today_start, today_start + timedelta(days=1)
 
-from .models import Patient, Checkin, Ticket, Slider
+from .models import Patient, Checkin, Ticket, Slider, Voice
 from .serializers import (
     UserSerializer, UserCreateSerializer, SpecialistSerializer,
     PatientSerializer, PatientCreateSerializer,
     CheckinSerializer, CheckinCreateSerializer,
     CheckinUpdateStatusSerializer, CheckinListSerializer,
-    TicketSerializer, SliderSerializer
+    TicketSerializer, SliderSerializer, VoiceSerializer
 )
 from .services import notify_new_checkin, notify_call_patient, notify_status_update, notify_ticket_called, notify_new_ticket, notify_slider_update
 
@@ -107,7 +107,17 @@ def text_to_speech(request):
     # Definir rutas para el ejecutable y modelo de Piper
     backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     piper_exe = os.path.join(backend_dir, "piper", "piper.exe")
-    model_path = os.path.join(backend_dir, "piper", "voices", "es_MX-ald-medium.onnx")
+    
+    # Buscar voz activa en la base de datos
+    active_voice = Voice.objects.filter(is_active=True).first()
+    
+    if active_voice:
+        model_path = active_voice.onnx_file.path
+        config_path = active_voice.json_file.path
+    else:
+        # Voz por defecto: davefx-medium (masculina de España)
+        model_path = os.path.join(backend_dir, "piper", "voices", "es_ES-davefx-medium.onnx")
+        config_path = os.path.join(backend_dir, "piper", "voices", "es_ES-davefx-medium.onnx.json")
 
     # Intentar generar el audio de forma local y offline con Piper
     if os.path.exists(piper_exe) and os.path.exists(model_path):
@@ -115,8 +125,14 @@ def text_to_speech(request):
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
                 temp_wav_path = temp_wav.name
 
+            # Construir argumentos de ejecución
+            cmd_args = [piper_exe, "--model", model_path]
+            if os.path.exists(config_path):
+                cmd_args += ["--config", config_path]
+            cmd_args += ["--output_file", temp_wav_path, "--length_scale", "1.15"]
+
             p = subprocess.Popen(
-                [piper_exe, "--model", model_path, "--output_file", temp_wav_path, "--length_scale", "1.15"],
+                cmd_args,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
@@ -732,3 +748,105 @@ class SliderViewSet(viewsets.ModelViewSet):
         queryset = Slider.objects.filter(is_active=True).order_by('order', '-created_at')
         serializer = SliderSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class VoiceViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestionar voces personalizadas de Piper.
+    """
+    queryset = Voice.objects.all()
+    serializer_class = VoiceSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        # En una red LAN cerrada, permitimos gestión sin restricciones
+        return [permissions.AllowAny()]
+
+    def destroy(self, request, *args, **kwargs):
+        """Elimina el registro de base de datos y borra físicamente los archivos del disco."""
+        instance = self.get_object()
+        
+        # Eliminar archivos del disco
+        if instance.onnx_file and os.path.exists(instance.onnx_file.path):
+            try:
+                os.remove(instance.onnx_file.path)
+            except OSError:
+                pass
+        if instance.json_file and os.path.exists(instance.json_file.path):
+            try:
+                os.remove(instance.json_file.path)
+            except OSError:
+                pass
+                
+        return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """Activa una voz para ser la utilizada globalmente en los llamados."""
+        voice = self.get_object()
+        voice.is_active = True
+        voice.save()
+        return Response({'status': f'Voz "{voice.name}" activada correctamente.'})
+
+    @action(detail=True, methods=['get', 'post'])
+    def test_audio(self, request, pk=None):
+        """Genera un audio de prueba para esta voz específica sin activarla globalmente."""
+        voice = self.get_object()
+        text = request.query_params.get('text', '').strip() or request.data.get('text', '').strip()
+        
+        if not text:
+            return Response({'detail': 'El texto es requerido.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        import os
+        import subprocess
+        import tempfile
+        from django.http import HttpResponse
+
+        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        piper_exe = os.path.join(backend_dir, "piper", "piper.exe")
+        model_path = voice.onnx_file.path
+        config_path = voice.json_file.path
+
+        if os.path.exists(piper_exe) and os.path.exists(model_path):
+            try:
+                with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+                    temp_wav_path = temp_wav.name
+
+                cmd_args = [piper_exe, "--model", model_path]
+                if os.path.exists(config_path):
+                    cmd_args += ["--config", config_path]
+                cmd_args += ["--output_file", temp_wav_path, "--length_scale", "1.15"]
+
+                p = subprocess.Popen(
+                    cmd_args,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                stdout, stderr = p.communicate(input=text.encode('utf-8'))
+
+                if p.returncode == 0 and os.path.exists(temp_wav_path):
+                    with open(temp_wav_path, 'rb') as f:
+                        audio_data = f.read()
+                    try:
+                        os.remove(temp_wav_path)
+                    except OSError:
+                        pass
+                    return HttpResponse(audio_data, content_type='audio/wav')
+                else:
+                    err_msg = stderr.decode('utf-8', errors='ignore')
+                    return Response(
+                        {'detail': f'Error al ejecutar Piper: {err_msg}'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+            except Exception as e:
+                return Response(
+                    {'detail': f'Excepción al ejecutar Piper: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            return Response(
+                {'detail': 'Ejecutable de Piper o archivo de voz no encontrado.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
