@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 from .views import (
     UserViewSet, PatientViewSet, CheckinViewSet, TicketViewSet,
     SliderViewSet, VoiceViewSet, list_specialists, CurrentUserView,
-    text_to_speech,
+    text_to_speech, shutdown_server,
 )
 
 # Crear router para viewsets
@@ -32,4 +32,5 @@ urlpatterns = [
     # Endpoints públicos para el kiosko
     path('specialists/', list_specialists, name='list_specialists'),
     path('tts/', text_to_speech, name='text_to_speech'),
+    path('system/shutdown/', shutdown_server, name='shutdown_server'),
 ]

@@ -126,4 +126,9 @@ export function getVoiceTestAudioUrl(id: number, text: string): string {
   return `${BASE_URL}/api/voices/${id}/test_audio/?text=${encoded}`;
 }
 
+export async function shutdownServer(): Promise<{ status: string }> {
+  const response = await api.post<{ status: string }>('/api/system/shutdown/');
+  return response.data;
+}
+
 export default api;

@@ -34,13 +34,14 @@ import {
   Circle as DotIcon,
   VolumeUp as VoiceIcon,
   PlayArrow as PlayIcon,
+  PowerSettingsNew as ShutdownIcon,
 } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import {
   getWaitingTickets, getCalledTickets, getAttendedTickets, callTicket, recallTicket,
   attendTicket, cancelTicket, getTicketStats,
   getActiveSliders, uploadSlider, deleteSlider, updateSlider,
-  getVoices, uploadVoice, activateVoice, deleteVoice, getVoiceTestAudioUrl,
+  getVoices, uploadVoice, activateVoice, deleteVoice, getVoiceTestAudioUrl, shutdownServer,
 } from '@/services/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import type { Ticket, Slider, TicketStats, Voice } from '@/types';
@@ -58,6 +59,24 @@ function fmtTime(iso: string | null) {
 export function SpecialistView() {
   const [tab, setTab] = useState(0);
   const [trigger, setTrigger] = useState(0);
+  const [shutdownDialogOpen, setShutdownDialogOpen] = useState(false);
+  const [shuttingDown, setShuttingDown] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+
+  async function handleShutdown() {
+    setShuttingDown(true);
+    try {
+      const res = await shutdownServer();
+      enqueueSnackbar(res.status || 'Apagando el servidor...', { variant: 'info', autoHideDuration: 8000 });
+      setShutdownDialogOpen(false);
+      setTimeout(() => {
+        setShuttingDown(false);
+      }, 5000);
+    } catch (err) {
+      setShuttingDown(false);
+      enqueueSnackbar((err as Error).message || 'Error al apagar el servidor', { variant: 'error' });
+    }
+  }
 
   const { isConnected } = useWebSocket(WS_URL, {
     onNewTicket:    () => setTrigger(p => p + 1),
@@ -138,6 +157,28 @@ export function SpecialistView() {
           <Typography sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
             Panel de Recepción
           </Typography>
+
+          <Tooltip title="Apagar Computadora Servidor">
+            <IconButton
+              onClick={() => setShutdownDialogOpen(true)}
+              sx={{
+                color: '#EF4444',
+                bgcolor: 'rgba(239, 68, 68, 0.1)',
+                border: '1.5px solid rgba(239, 68, 68, 0.2)',
+                ml: 1.5,
+                width: 36,
+                height: 36,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: '#EF4444',
+                  color: '#fff',
+                  boxShadow: '0 0 12px rgba(239, 68, 68, 0.45)',
+                }
+              }}
+            >
+              <ShutdownIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -147,6 +188,37 @@ export function SpecialistView() {
         {tab === 1 && <SlidersTab trigger={trigger} />}
         {tab === 2 && <VoicesTab />}
       </Box>
+
+      {/* Diálogo de Confirmación de Apagado de Servidor */}
+      <Dialog
+        open={shutdownDialogOpen}
+        onClose={() => !shuttingDown && setShutdownDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: 3, width: '100%', maxWidth: 400 } }}
+      >
+        <DialogTitle fontWeight={800} fontSize={18} sx={{ color: '#EF4444' }}>
+          ¿Apagar Computadora Servidor?
+        </DialogTitle>
+        <DialogContent>
+          <Typography color="#64748B" fontSize={14}>
+            Esta acción ejecutará el comando de apagado de sistema operativo en el servidor principal. 
+            <strong> El turnero dejará de estar disponible y la máquina física se apagará</strong>.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button onClick={() => setShutdownDialogOpen(false)} disabled={shuttingDown} sx={{ color: '#64748B', fontWeight: 700 }}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleShutdown}
+            disabled={shuttingDown}
+            variant="contained"
+            color="error"
+            sx={{ fontWeight: 700, borderRadius: 2 }}
+          >
+            {shuttingDown ? <CircularProgress size={18} color="inherit" /> : 'Sí, Apagar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

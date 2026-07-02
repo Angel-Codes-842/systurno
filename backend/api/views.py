@@ -174,6 +174,32 @@ def text_to_speech(request):
     )
 
 
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def shutdown_server(request):
+    """Apaga físicamente la computadora del servidor en 5 segundos."""
+    import sys
+    import subprocess
+    
+    print("[SYSTEM] Solicitud de apagado remoto recibida.")
+    
+    # En Windows, apagamos el equipo de forma forzada (/f) en 5 segundos (/t 5)
+    if sys.platform == "win32":
+        try:
+            subprocess.Popen(["shutdown", "/s", "/t", "5", "/f"])
+            return Response({'status': 'Apagando la computadora del servidor en 5 segundos...'})
+        except Exception as e:
+            return Response({'detail': f'Error al ejecutar comando de apagado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        # En Linux/macOS
+        try:
+            subprocess.Popen(["sudo", "shutdown", "-h", "now"])
+            return Response({'status': 'Apagando el servidor ahora...'})
+        except Exception as e:
+            return Response({'detail': f'Error al ejecutar comando de apagado: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 class PatientViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestionar pacientes.
