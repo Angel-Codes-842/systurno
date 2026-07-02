@@ -335,7 +335,7 @@ export function DisplayView() {
           </div>
 
           {/* Logo Biogenic */}
-          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 78, objectFit: 'contain', display: 'block', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }} />
+          <img src="/logo_biogenic.png" alt="Biogenic" style={{ height: 78, objectFit: 'contain', display: 'block', imageRendering: '-webkit-optimize-contrast' }} />
         </header>
 
         {/* ── CUERPO ──────────────────────────────────────────── */}
@@ -389,7 +389,7 @@ export function DisplayView() {
                   <>
                     <span style={{
                       fontFamily: '"GoodTimeGrotesk", sans-serif',
-                      fontSize: 'clamp(3.2rem, 6vw, 5.5rem)',
+                      fontSize: 'clamp(4.2rem, 8vw, 7.2rem)',
                       fontWeight: 900,
                       color: '#1E293B',
                       lineHeight: 1.0,
@@ -402,9 +402,9 @@ export function DisplayView() {
                     <span style={{
                       fontFamily: '"Poppins", sans-serif',
                       color: '#488E3E',
-                      fontWeight: 800,
-                      fontSize: 20,
-                      letterSpacing: '0.15em',
+                      fontWeight: 900,
+                      fontSize: 26,
+                      letterSpacing: '0.16em',
                       textTransform: 'uppercase',
                     }}>
                       Pase a Recepción
@@ -466,7 +466,7 @@ export function DisplayView() {
                         <div key={t.id} style={{
                           background: 'linear-gradient(135deg, #e0e7ff 0%, #fef9c3 100%)',
                           borderRadius: 14,
-                          padding: '12px 14px 10px',
+                          padding: '10px 10px 8px',
                           textAlign: 'center',
                           border: '1px solid rgba(0,0,0,0.06)',
                           boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
@@ -474,7 +474,7 @@ export function DisplayView() {
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 900,
-                            fontSize: 'clamp(1.5rem, 2.8vw, 2.2rem)',
+                            fontSize: 'clamp(2.0rem, 3.4vw, 2.8rem)',
                             color: '#1E293B', lineHeight: 1.0,
                             letterSpacing: '0.02em',
                             fontVariantNumeric: 'tabular-nums',
@@ -484,7 +484,7 @@ export function DisplayView() {
                           {hora && (
                             <div style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontSize: 10.5, fontWeight: 700,
+                              fontSize: 13.5, fontWeight: 800,
                               color: '#488E3E', letterSpacing: '0.04em', marginTop: 5,
                             }}>
                               {hora}
