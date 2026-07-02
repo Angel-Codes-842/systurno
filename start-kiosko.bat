@@ -70,6 +70,20 @@ if not defined PORT (
 set URL=http://%SERVER_IP%:%PORT%%ROUTE%
 echo Abriendo kiosko en: %URL%
 
+REM Cerrar instancias previas de Firefox
+taskkill /F /IM firefox.exe >nul 2>&1
+timeout /t 1 /nobreak >nul
+
+REM Buscar Firefox e iniciar en modo kiosko
+if exist "C:\Program Files\Mozilla Firefox\firefox.exe" (
+    start "" "C:\Program Files\Mozilla Firefox\firefox.exe" --kiosk "%URL%"
+    exit
+)
+if exist "C:\Program Files (x86)\Mozilla Firefox\firefox.exe" (
+    start "" "C:\Program Files (x86)\Mozilla Firefox\firefox.exe" --kiosk "%URL%"
+    exit
+)
+
 REM Cerrar instancias previas de Chrome
 taskkill /F /IM chrome.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
