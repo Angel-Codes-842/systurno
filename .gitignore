@@ -74,4 +74,10 @@ FOTOS\ TURNERO/
 fotos\ turnero/
 fotos turnero/
 
+# Modelos de voz de Piper (pesan >60MB cada uno, subida/descarga lenta)
+backend/piper/voices/*.onnx
+backend/piper/voices/*.json
+!backend/piper/voices/.gitkeep
+
+
 

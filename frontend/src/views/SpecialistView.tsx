@@ -1170,8 +1170,9 @@ function VoicesTab() {
 
             <Divider sx={{ my: 3.5 }} />
 
-            <Typography fontSize={12} color="#64748B" sx={{ lineHeight: 1.5 }}>
-              💡 <strong>¿Dónde descargar más voces de Piper?</strong> Puedes encontrar modelos masculinos y femeninos listos para descargar en la comunidad oficial de Piper en Hugging Face o en su catálogo oficial: 
+            <Typography fontSize={12} color="#64748B" sx={{ lineHeight: 1.6 }}>
+              💡 <strong>Proyecto optimizado y liviano (~5MB)</strong>: 
+              Los modelos de voz pesados (.onnx) ya no se pre-cargan en la descarga inicial para que bajes el sistema en menos de un segundo. Sube tu voz preferida para activar el motor Piper local premium. Puedes descargar modelos listos en el catálogo oficial:
               <br />
               <a href="https://rhasspy.github.io/piper-samples/" target="_blank" rel="noreferrer" style={{ color: '#1B2A4A', fontWeight: 700 }}>
                 rhasspy.github.io/piper-samples
@@ -1189,7 +1190,7 @@ function VoicesTab() {
               <VoiceIcon sx={{ color: '#1B2A4A' }} /> Voces Disponibles
             </Typography>
             <Typography color="#64748B" fontSize={13} mb={3.5}>
-              Listado de voces. Activa la voz que quieres usar para los llamados de turnos en la sala de espera. Si no hay voces activas, se usará la voz Davefx (España) de forma predeterminada.
+              Listado de voces. Activa la voz que quieres usar para los llamados. Si no hay voces personalizadas activas, el sistema usará las voces de tu Android TV (Google Assistant) o Google Web de forma automática.
             </Typography>
 
             {loading ? (
