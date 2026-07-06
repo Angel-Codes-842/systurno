@@ -209,7 +209,7 @@ export function DisplayView() {
 
   const slide  = useMemo(() => sliders[idx] ?? null, [idx, sliders]);
   const latest = tickets[0] ?? null;
-  const prev   = tickets.slice(1, 4);
+  const prev   = tickets.slice(1, 5);
 
   // Pausar video de fondo si el slider actual está reproduciendo un video (para evitar doble decodificación por hardware lagueada)
   useEffect(() => {
@@ -389,15 +389,15 @@ export function DisplayView() {
                   <>
                     <span style={{
                       fontFamily: '"GoodTimeGrotesk", sans-serif',
-                      fontSize: 'clamp(5.0rem, 9.5vw, 8.2rem)',
+                      fontSize: 'clamp(4.2rem, 7.8vw, 6.8rem)',
                       fontWeight: 950,
                       color: '#1E293B',
                       lineHeight: 0.9,
                       letterSpacing: '0.03em',
                       fontVariantNumeric: 'tabular-nums',
-                      marginBottom: 6,
+                      marginBottom: 8,
                       display: 'block',
-                      transform: 'scaleX(1.12)',
+                      transform: 'scaleX(1.05)',
                       transformOrigin: 'center',
                     }}>
                       {latest.ticket_number}
@@ -406,11 +406,11 @@ export function DisplayView() {
                       fontFamily: '"Poppins", sans-serif',
                       color: '#488E3E',
                       fontWeight: 900,
-                      fontSize: 26,
-                      letterSpacing: '0.18em',
+                      fontSize: 22,
+                      letterSpacing: '0.14em',
                       textTransform: 'uppercase',
-                      marginTop: 6,
-                      transform: 'scaleX(1.03)',
+                      marginTop: 4,
+                      transform: 'scaleX(1.01)',
                       transformOrigin: 'center',
                     }}>
                       Pase a Recepción
@@ -451,7 +451,7 @@ export function DisplayView() {
                 Anteriores
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '78%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '72%', overflow: 'hidden' }}>
                 {prev.length === 0
                   ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
                       Los turnos anteriores aparecerán aquí
@@ -472,7 +472,7 @@ export function DisplayView() {
                         <div key={t.id} style={{
                           background: 'linear-gradient(135deg, #e0e7ff 0%, #fef9c3 100%)',
                           borderRadius: 14,
-                          padding: '12px 10px 8px',
+                          padding: '8px 10px 6px',
                           textAlign: 'center',
                           border: '1px solid rgba(0,0,0,0.06)',
                           boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
@@ -480,11 +480,11 @@ export function DisplayView() {
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 950,
-                            fontSize: 'clamp(2.3rem, 3.8vw, 3.0rem)',
+                            fontSize: 'clamp(1.7rem, 2.8vw, 2.2rem)',
                             color: '#1E293B', lineHeight: 1.0,
-                            letterSpacing: '0.03em',
+                            letterSpacing: '0.02em',
                             fontVariantNumeric: 'tabular-nums',
-                            transform: 'scaleX(1.08)',
+                            transform: 'scaleX(1.04)',
                             transformOrigin: 'center',
                           }}>
                             {t.ticket_number}
@@ -492,9 +492,9 @@ export function DisplayView() {
                           {hora && (
                             <div style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontSize: 14, fontWeight: 800,
-                              color: '#488E3E', letterSpacing: '0.06em', marginTop: 6,
-                              transform: 'scaleX(1.02)',
+                              fontSize: 12.5, fontWeight: 700,
+                              color: '#488E3E', letterSpacing: '0.04em', marginTop: 4,
+                              transform: 'scaleX(1.01)',
                               transformOrigin: 'center',
                             }}>
                               {hora}
