@@ -389,15 +389,15 @@ export function DisplayView() {
                   <>
                     <span style={{
                       fontFamily: '"GoodTimeGrotesk", sans-serif',
-                      fontSize: 'clamp(6.0rem, 11.5vw, 10.0rem)',
+                      fontSize: 'clamp(5.0rem, 9.5vw, 8.2rem)',
                       fontWeight: 950,
                       color: '#1E293B',
                       lineHeight: 0.9,
-                      letterSpacing: '0.04em',
+                      letterSpacing: '0.03em',
                       fontVariantNumeric: 'tabular-nums',
-                      marginBottom: 4,
+                      marginBottom: 6,
                       display: 'block',
-                      transform: 'scaleX(1.22)',
+                      transform: 'scaleX(1.12)',
                       transformOrigin: 'center',
                     }}>
                       {latest.ticket_number}
@@ -406,11 +406,11 @@ export function DisplayView() {
                       fontFamily: '"Poppins", sans-serif',
                       color: '#488E3E',
                       fontWeight: 900,
-                      fontSize: 32,
-                      letterSpacing: '0.22em',
+                      fontSize: 26,
+                      letterSpacing: '0.18em',
                       textTransform: 'uppercase',
-                      marginTop: 8,
-                      transform: 'scaleX(1.06)',
+                      marginTop: 6,
+                      transform: 'scaleX(1.03)',
                       transformOrigin: 'center',
                     }}>
                       Pase a Recepción
@@ -451,7 +451,7 @@ export function DisplayView() {
                 Anteriores
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '92%', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '78%', overflow: 'hidden' }}>
                 {prev.length === 0
                   ? <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
                       Los turnos anteriores aparecerán aquí
@@ -472,7 +472,7 @@ export function DisplayView() {
                         <div key={t.id} style={{
                           background: 'linear-gradient(135deg, #e0e7ff 0%, #fef9c3 100%)',
                           borderRadius: 14,
-                          padding: '14px 10px 10px',
+                          padding: '12px 10px 8px',
                           textAlign: 'center',
                           border: '1px solid rgba(0,0,0,0.06)',
                           boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
@@ -480,11 +480,11 @@ export function DisplayView() {
                           <div style={{
                             fontFamily: '"GoodTimeGrotesk", sans-serif',
                             fontWeight: 950,
-                            fontSize: 'clamp(2.8rem, 4.8vw, 3.8rem)',
+                            fontSize: 'clamp(2.3rem, 3.8vw, 3.0rem)',
                             color: '#1E293B', lineHeight: 1.0,
-                            letterSpacing: '0.04em',
+                            letterSpacing: '0.03em',
                             fontVariantNumeric: 'tabular-nums',
-                            transform: 'scaleX(1.18)',
+                            transform: 'scaleX(1.08)',
                             transformOrigin: 'center',
                           }}>
                             {t.ticket_number}
@@ -492,9 +492,9 @@ export function DisplayView() {
                           {hora && (
                             <div style={{
                               fontFamily: '"Poppins", sans-serif',
-                              fontSize: 16.5, fontWeight: 900,
-                              color: '#488E3E', letterSpacing: '0.08em', marginTop: 8,
-                              transform: 'scaleX(1.05)',
+                              fontSize: 14, fontWeight: 800,
+                              color: '#488E3E', letterSpacing: '0.06em', marginTop: 6,
+                              transform: 'scaleX(1.02)',
                               transformOrigin: 'center',
                             }}>
                               {hora}
@@ -612,21 +612,21 @@ export function DisplayView() {
                     src="/logo_biogenic.png"
                     alt="Biogenic"
                     style={{
-                      height: 180,
+                      height: 140,
                       objectFit: 'contain',
                       filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))',
                     }}
                   />
-                  <div style={{ height: 2, width: 120, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 9 }} />
+                  <div style={{ height: 2, width: 100, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 9 }} />
                   <span style={{
                     fontFamily: '"Poppins", sans-serif',
-                    color: 'rgba(255,255,255,0.9)',
-                    fontSize: 'clamp(1.4rem, 2.2vw, 2.2rem)',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: 'clamp(1.2rem, 1.8vw, 1.7rem)',
                     fontWeight: 800,
-                    letterSpacing: '0.12em',
+                    letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                     textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    transform: 'scaleX(1.05)',
+                    transform: 'scaleX(1.02)',
                   }}>
                     Atención Médica y Diagnóstico
                   </span>
