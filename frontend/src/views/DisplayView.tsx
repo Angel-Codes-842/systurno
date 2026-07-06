@@ -588,21 +588,49 @@ export function DisplayView() {
 
               </div>
             ) : (
-              /* Sin sliders: mostrar turnero.mp4 en el panel derecho */
+              /* Sin sliders: mostrar placa corporativa de Biogenic en el panel derecho */
               <div style={{
                 flexGrow: 1, position: 'relative',
                 borderRadius: 16, overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1.5px solid rgba(255,255,255,0.08)',
+                background: 'linear-gradient(135deg, #1B2A4A 0%, #0F172A 100%)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                padding: '40px',
               }}>
-                <video
-                  autoPlay loop muted playsInline
-                  disablePictureInPicture
-                  disableRemotePlayback
-                  controlsList="nodownload nofullscreen noremoteplayback"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
-                >
-                  <source src="/sliders/turnero.mp4?v=2" type="video/mp4" />
-                </video>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 28,
+                  textAlign: 'center',
+                }}>
+                  <img
+                    src="/logo_biogenic.png"
+                    alt="Biogenic"
+                    style={{
+                      height: 180,
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))',
+                    }}
+                  />
+                  <div style={{ height: 2, width: 120, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 9 }} />
+                  <span style={{
+                    fontFamily: '"Poppins", sans-serif',
+                    color: 'rgba(255,255,255,0.9)',
+                    fontSize: 'clamp(1.4rem, 2.2vw, 2.2rem)',
+                    fontWeight: 800,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    transform: 'scaleX(1.05)',
+                  }}>
+                    Atención Médica y Diagnóstico
+                  </span>
+                </div>
               </div>
             )}
           </div>
