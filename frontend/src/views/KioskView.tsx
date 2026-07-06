@@ -208,31 +208,31 @@ export function KioskView() {
         {/* MENÚ */}
         {phase === 'menu' && (
           <Fade in timeout={300}>
-            <div style={{ width: '100%', maxWidth: 1000 }}>
+            <div style={{ width: '100%', maxWidth: 1000, marginTop: -60 }}>
               {/* Bienvenido + Logo */}
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: 44,
+                marginBottom: 32,
               }}>
                 <h2 style={{
-                  margin: '0 0 16px 0',
+                  margin: '0 0 12px 0',
                   color: '#ffffff',
-                  fontSize: 'clamp(2.4rem, 4.5vw, 3.2rem)',
+                  fontSize: 'clamp(2.2rem, 4vw, 2.8rem)',
                   fontWeight: 900,
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   textShadow: '0 2px 10px rgba(0,0,0,0.35)',
                 }}>
-                  ¡Bienvenido!
+                  BIENVENIDOS A
                 </h2>
                 <img
                   src="/logo_biogenic.png"
                   alt="Biogenic"
                   style={{
-                    height: 106,
+                    height: 135,
                     objectFit: 'contain',
                     filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))',
                   }}
