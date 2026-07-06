@@ -354,9 +354,9 @@ export function DisplayView() {
               flexShrink: 0,
               backgroundColor: '#1B2A4A',
               borderRadius: 24,
-              padding: '0 16px 16px 16px',
+              padding: '0 16px 14px 16px',
               display: 'flex', flexDirection: 'column', alignItems: 'stretch',
-              marginBottom: 12,
+              marginBottom: 8,
               boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
             }}>
               {/* Título ÚLTIMO LLAMADO */}
@@ -368,7 +368,7 @@ export function DisplayView() {
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 textAlign: 'center',
-                padding: '16px 0 12px 0',
+                padding: '12px 0 8px 0',
               }}>
                 Último Llamado
               </div>
@@ -377,13 +377,13 @@ export function DisplayView() {
               <div style={{
                 backgroundColor: '#ffffff',
                 borderRadius: 16,
-                padding: '24px 16px 20px',
+                padding: '16px 16px 14px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)',
-                minHeight: 180,
+                minHeight: 145,
               }}>
                 {latest ? (
                   <>

@@ -19,7 +19,7 @@ backend/*.egg-info/
 backend/db.sqlite3
 backend/db.sqlite3-journal
 backend/staticfiles/
-backend/media/sliders/*
+backend/media/sliders/videos/*
 !backend/media/sliders/.gitkeep
 
 # Environment variables
