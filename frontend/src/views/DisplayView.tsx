@@ -106,8 +106,9 @@ function fallbackSpeechSynthesis(text: string, rate: number, onComplete: () => v
   }
 }
 
-/* ── Cola de anuncios: los turnos que llegan mientras suena el anterior se encolan ── */
-const _announceQueue: string[] = [];
+/* ── Cola de anuncios: almacena objetos Ticket completos para poder
+   sincronizar el display con el audio ── */
+const _announceQueue: Ticket[] = [];
 let _announceRunning = false;
 
 async function _processQueue() {
@@ -115,9 +116,11 @@ async function _processQueue() {
   _announceRunning = true;
   window.dispatchEvent(new CustomEvent('ticket-announcement-start'));
   while (_announceQueue.length > 0) {
-    const ticketNumber = _announceQueue.shift()!;
+    const ticket = _announceQueue.shift()!;
     try {
-      const phrase = `Turno ${ticketNumber}, pase a recepción`;
+      // Notificar al componente React cuál turno está sonando AHORA
+      window.dispatchEvent(new CustomEvent('ticket-announcing', { detail: ticket }));
+      const phrase = `Turno ${ticket.ticket_number}, pase a recepción`;
       playDing();
       await new Promise(r => setTimeout(r, ANNOUNCE.dingToSpeechMs));
       for (let i = 0; i < ANNOUNCE.repeatCount; i++) {
@@ -132,9 +135,9 @@ async function _processQueue() {
   window.dispatchEvent(new CustomEvent('ticket-announcement-end'));
 }
 
-function announceTicket(ticketNumber: string) {
-  _announceQueue.push(ticketNumber);  // encolar sin descartar
-  _processQueue();                    // iniciar procesamiento si no está corriendo
+function announceTicket(ticket: Ticket) {
+  _announceQueue.push(ticket);  // encolar el objeto completo
+  _processQueue();              // iniciar procesamiento si no está corriendo
 }
 
 
@@ -145,19 +148,27 @@ export function DisplayView() {
   const [idx,     setIdx]     = useState(0);
   const { date, time } = useClock();
   const [isAnnouncing, setIsAnnouncing] = useState(false);
+  // Turno que está siendo anunciado EN ESTE MOMENTO por la cola de audio
+  const [currentAnnounced, setCurrentAnnounced] = useState<Ticket | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const bgVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const handleStart = () => setIsAnnouncing(true);
-    const handleEnd = () => setIsAnnouncing(false);
+    const handleEnd   = () => setIsAnnouncing(false);
+    // Cuando la cola comienza a anunciar un turno específico, actualizar el display
+    const handleAnnouncing = (e: Event) => {
+      setCurrentAnnounced((e as CustomEvent<Ticket>).detail);
+    };
 
     window.addEventListener('ticket-announcement-start', handleStart);
     window.addEventListener('ticket-announcement-end', handleEnd);
+    window.addEventListener('ticket-announcing', handleAnnouncing);
 
     return () => {
       window.removeEventListener('ticket-announcement-start', handleStart);
       window.removeEventListener('ticket-announcement-end', handleEnd);
+      window.removeEventListener('ticket-announcing', handleAnnouncing);
     };
   }, []);
 
@@ -194,7 +205,7 @@ export function DisplayView() {
         }
       });
       if (t.status === 'CALLED') {
-        announceTicket(t.ticket_number);
+        announceTicket(t);  // pasar el objeto Ticket completo para poder actualizar el display
       }
     },
     onSliderUpdate: fetchSliders,
@@ -218,8 +229,11 @@ export function DisplayView() {
   }, [idx, sliders]);
 
   const slide  = useMemo(() => sliders[idx] ?? null, [idx, sliders]);
-  const latest = tickets[0] ?? null;
-  const prev   = tickets.slice(1, 5);
+  // latest = el turno que está sonando ahora mismo (sincronizado con el audio),
+  // o el primero de la lista si no hay anuncio activo todavía.
+  const latest = currentAnnounced ?? tickets[0] ?? null;
+  // prev = todos los turnos llamados excepto el que está siendo anunciado ahora
+  const prev   = tickets.filter(t => t.id !== latest?.id).slice(0, 4);
 
   // Pausar video de fondo si el slider actual está reproduciendo un video (para evitar doble decodificación por hardware lagueada)
   useEffect(() => {
