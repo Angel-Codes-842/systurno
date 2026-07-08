@@ -106,26 +106,36 @@ function fallbackSpeechSynthesis(text: string, rate: number, onComplete: () => v
   }
 }
 
-async function announceTicket(ticketNumber: string) {
-  if (announceTicket._busy) return;       // ya hay un anuncio en curso
-  announceTicket._busy = true;
+/* ── Cola de anuncios: los turnos que llegan mientras suena el anterior se encolan ── */
+const _announceQueue: string[] = [];
+let _announceRunning = false;
+
+async function _processQueue() {
+  if (_announceRunning) return;
+  _announceRunning = true;
   window.dispatchEvent(new CustomEvent('ticket-announcement-start'));
-  try {
-    const phrase = `Turno ${ticketNumber}, pase a recepción`;
-    playDing();
-    await new Promise(r => setTimeout(r, ANNOUNCE.dingToSpeechMs));
-    for (let i = 0; i < ANNOUNCE.repeatCount; i++) {
-      await speakTTS(phrase, getTTS, ANNOUNCE.speechRate);
-      if (i < ANNOUNCE.repeatCount - 1) {
-        await new Promise(r => setTimeout(r, ANNOUNCE.betweenRepeatMs));
+  while (_announceQueue.length > 0) {
+    const ticketNumber = _announceQueue.shift()!;
+    try {
+      const phrase = `Turno ${ticketNumber}, pase a recepción`;
+      playDing();
+      await new Promise(r => setTimeout(r, ANNOUNCE.dingToSpeechMs));
+      for (let i = 0; i < ANNOUNCE.repeatCount; i++) {
+        await speakTTS(phrase, getTTS, ANNOUNCE.speechRate);
+        if (i < ANNOUNCE.repeatCount - 1) {
+          await new Promise(r => setTimeout(r, ANNOUNCE.betweenRepeatMs));
+        }
       }
-    }
-  } finally {
-    announceTicket._busy = false;
-    window.dispatchEvent(new CustomEvent('ticket-announcement-end'));
+    } catch { /* ignorar errores individuales para no frenar la cola */ }
   }
+  _announceRunning = false;
+  window.dispatchEvent(new CustomEvent('ticket-announcement-end'));
 }
-announceTicket._busy = false;
+
+function announceTicket(ticketNumber: string) {
+  _announceQueue.push(ticketNumber);  // encolar sin descartar
+  _processQueue();                    // iniciar procesamiento si no está corriendo
+}
 
 
 /* ════════════════════════════════════════════════════════════════ */
