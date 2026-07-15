@@ -39,12 +39,47 @@ const ANNOUNCE = {
   repeatCount:     2,     // cuántas veces se repite el anuncio
 };
 
+/* ── AudioContext persistente ──
+   Se mantiene uno solo durante toda la vida de la página para evitar que el
+   navegador lo suspenda por inactividad. Se reanuda antes de cada uso. */
+let _sharedAudioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext | null {
+  try {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AC) return null;
+    if (!_sharedAudioCtx || _sharedAudioCtx.state === 'closed') {
+      _sharedAudioCtx = new AC();
+    }
+    // Reanudar siempre antes de usar (puede estar suspendido por inactividad)
+    if (_sharedAudioCtx.state === 'suspended') {
+      _sharedAudioCtx.resume().catch(() => {});
+    }
+    return _sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+/* Toca un sonido silencioso para mantener el AudioContext vivo.
+   Se llama periódicamente desde un intervalo en el componente. */
+export function _keepAudioCtxAlive() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.00001, ctx.currentTime); // volumen 0: inaudible
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.05);
+}
+
 /* ── Anuncio de turno: ding + TTS ── */
 function playDing() {
   try {
-    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AC) return;
-    const ctx = new AC();
+    const ctx = getAudioCtx();
+    if (!ctx) return;
 
     const hit = (freq: number, start: number, dur: number, vol: number, type: 'sine' | 'triangle' = 'sine') => {
       const osc = ctx.createOscillator();
@@ -165,10 +200,27 @@ export function DisplayView() {
     window.addEventListener('ticket-announcement-end', handleEnd);
     window.addEventListener('ticket-announcing', handleAnnouncing);
 
+    // ── Keepalives de audio ──────────────────────────────────────────────────
+    // 1) AudioContext: tocar un sonido silencioso cada 25s para que el browser
+    //    no suspenda el contexto de audio por inactividad.
+    const audioKeepalive = setInterval(_keepAudioCtxAlive, 25_000);
+
+    // 2) SpeechSynthesis: Chrome tiene un bug donde speechSynthesis se congela
+    //    después de ~15 min de inactividad. Hacerle pause/resume periódicamente
+    //    lo mantiene activo.
+    const speechKeepalive = setInterval(() => {
+      if ('speechSynthesis' in window && !window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 10_000);
+
     return () => {
       window.removeEventListener('ticket-announcement-start', handleStart);
       window.removeEventListener('ticket-announcement-end', handleEnd);
       window.removeEventListener('ticket-announcing', handleAnnouncing);
+      clearInterval(audioKeepalive);
+      clearInterval(speechKeepalive);
     };
   }, []);
 
